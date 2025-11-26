@@ -6,9 +6,10 @@ interface ButtonProps {
   title: string;
   loading?: boolean;
   variant?: 'primary' | 'secondary' | 'outline';
+  disabled?: boolean;
 }
 
-export const Button = ({ onPress, title, loading, variant = 'primary' }: ButtonProps) => {
+export const Button = ({ onPress, title, loading, variant = 'primary', disabled }: ButtonProps) => {
   const baseStyle = "p-4 rounded-lg items-center justify-center";
   const variantStyles = {
     primary: "bg-blue-600",
@@ -25,7 +26,7 @@ export const Button = ({ onPress, title, loading, variant = 'primary' }: ButtonP
     <TouchableOpacity
       className={`${baseStyle} ${variantStyles[variant]} ${loading ? 'opacity-70' : ''}`}
       onPress={onPress}
-      disabled={loading}
+      disabled={loading || disabled}
     >
       {loading ? (
         <ActivityIndicator color={variant === 'outline' ? '#2563EB' : 'white'} />

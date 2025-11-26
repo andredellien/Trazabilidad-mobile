@@ -53,8 +53,12 @@ export interface RawMaterialCategory {
 export const rawMaterialsApi = {
   // Raw Material Bases
   getRawMaterialBases: async () => {
-    const response = await apiClient.get<RawMaterialBase[]>('/raw-material-bases');
-    return response.data;
+    const response = await apiClient.get('/raw-material-bases');
+    console.log('getRawMaterialBases response:', response.data);
+    // Handle paginated response
+    const data = (response.data as any).data || response.data;
+    console.log('Material bases extracted:', data);
+    return data;
   },
 
   getRawMaterialBase: async (id: number) => {

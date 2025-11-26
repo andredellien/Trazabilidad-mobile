@@ -1,13 +1,16 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { CustomIcon } from '../components/common/CustomIcon';
 
 import HomeScreen from '../screens/home/HomeScreen';
 import BatchListScreen from '../screens/production/BatchListScreen';
 import BatchDetailScreen from '../screens/production/BatchDetailScreen';
+import CreateBatchScreen from '../screens/production/CreateBatchScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import RawMaterialsScreen from '../screens/materials/RawMaterialsScreen';
+import CreateMaterialScreen from '../screens/materials/CreateMaterialScreen';
+import CreateMaterialBaseScreen from '../screens/materials/CreateMaterialBaseScreen';
 import OrdersScreen from '../screens/orders/OrdersScreen';
 
 const Tab = createBottomTabNavigator();
@@ -16,8 +19,9 @@ const Stack = createNativeStackNavigator();
 function ProductionStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="BatchList" component={BatchListScreen} options={{ title: 'Production Batches' }} />
-      <Stack.Screen name="BatchDetail" component={BatchDetailScreen} options={{ title: 'Batch Details' }} />
+      <Stack.Screen name="BatchList" component={BatchListScreen} options={{ title: 'Lotes de Producción' }} />
+      <Stack.Screen name="BatchDetail" component={BatchDetailScreen} options={{ title: 'Detalle del Lote' }} />
+      <Stack.Screen name="CreateBatch" component={CreateBatchScreen} options={{ title: 'Nuevo Lote' }} />
     </Stack.Navigator>
   );
 }
@@ -25,7 +29,9 @@ function ProductionStack() {
 function MaterialsStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="RawMaterials" component={RawMaterialsScreen} options={{ title: 'Raw Materials' }} />
+      <Stack.Screen name="RawMaterials" component={RawMaterialsScreen} options={{ title: 'Materias Primas' }} />
+      <Stack.Screen name="CreateMaterial" component={CreateMaterialScreen} options={{ title: 'Nueva Materia Prima' }} />
+      <Stack.Screen name="CreateMaterialBase" component={CreateMaterialBaseScreen} options={{ title: 'Nueva Base' }} />
     </Stack.Navigator>
   );
 }
@@ -33,7 +39,7 @@ function MaterialsStack() {
 function OrdersStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: 'Orders' }} />
+      <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: 'Órdenes' }} />
     </Stack.Navigator>
   );
 }
@@ -41,7 +47,7 @@ function OrdersStack() {
 function ProfileStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+      <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil' }} />
     </Stack.Navigator>
   );
 }
@@ -51,39 +57,39 @@ export default function MainNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
-          let iconText: string;
+          let iconName: string;
 
           switch (route.name) {
             case 'Home':
-              iconText = '🏠';
+              iconName = 'home';
               break;
             case 'Production':
-              iconText = '🏭';
+              iconName = 'factory';
               break;
             case 'Materials':
-              iconText = '📦';
+              iconName = 'inventory';
               break;
             case 'Orders':
-              iconText = '📋';
+              iconName = 'assignment';
               break;
             case 'Profile':
-              iconText = '👤';
+              iconName = 'person';
               break;
             default:
-              iconText = '❓';
+              iconName = 'help';
           }
 
-          return <Text style={{ fontSize: size, color }}>{iconText}</Text>;
+          return <CustomIcon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#3b82f6',
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Production" component={ProductionStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Materials" component={MaterialsStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Orders" component={OrdersStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio' }} />
+      <Tab.Screen name="Production" component={ProductionStack} options={{ headerShown: false, title: 'Producción' }} />
+      <Tab.Screen name="Materials" component={MaterialsStack} options={{ headerShown: false, title: 'Materiales' }} />
+      <Tab.Screen name="Orders" component={OrdersStack} options={{ headerShown: false, title: 'Órdenes' }} />
+      <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false, title: 'Perfil' }} />
     </Tab.Navigator>
   );
 }

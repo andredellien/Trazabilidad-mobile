@@ -8,11 +8,11 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      'Cerrar Sesión',
+      '¿Estás seguro de que deseas cerrar sesión?',
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: logout },
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar Sesión', style: 'destructive', onPress: logout },
       ]
     );
   };
@@ -32,24 +32,24 @@ export default function ProfileScreen() {
         </View>
 
         <View className="bg-white rounded-lg p-6 mb-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">Settings</Text>
+          <Text className="text-lg font-semibold text-gray-900 mb-4">Configuración</Text>
           
           <TouchableOpacity className="py-3 border-b border-gray-100">
-            <Text className="text-gray-700">Change Password</Text>
+            <Text className="text-gray-700">Cambiar Contraseña</Text>
           </TouchableOpacity>
           
           <TouchableOpacity className="py-3 border-b border-gray-100">
-            <Text className="text-gray-700">Notifications</Text>
+            <Text className="text-gray-700">Notificaciones</Text>
           </TouchableOpacity>
           
           <TouchableOpacity className="py-3">
-            <Text className="text-gray-700">Language</Text>
+            <Text className="text-gray-700">Idioma</Text>
           </TouchableOpacity>
         </View>
 
         <View className="mt-auto">
           <Button
-            title="Logout"
+            title="Cerrar Sesión"
             onPress={handleLogout}
             variant="outline"
           />

@@ -158,7 +158,7 @@ export const productionApi = {
         status: 'in_progress', // Default status since we don't have status mapping yet
         start_date: batch.start_time || batch.creation_date,
         end_date: batch.end_time,
-        quantity: parseFloat(batch.target_quantity || '0'),
+        quantity: parseFloat(String(batch.target_quantity || 0)),
         operator_name: 'Production Team', // Default since we don't have operator relation yet
       }));
     } catch (error: any) {
@@ -168,29 +168,42 @@ export const productionApi = {
   },
 
   getBatch: async (id: number) => {
-    const batch = await productionApi.getProductionBatch(id);
-    // Transform to old interface for backward compatibility
-    return {
-      batch_id: batch.production_batch_id,
-      product_name: batch.customer_order?.product_name || 'Unknown',
-      status: batch.status?.name?.toLowerCase() as any || 'pending',
-      start_date: batch.start_date || batch.created_at,
-      end_date: batch.end_date,
-      quantity: batch.expected_quantity,
-      operator_name: batch.operator ? `${batch.operator.first_name} ${batch.operator.last_name}` : 'Unknown',
-    };
+    try {
+      console.log('Fetching batch with id:', id);
+      const batch = await productionApi.getProductionBatch(id);
+      console.log('Batch data received:', batch);
+      
+      // Transform to old interface for backward compatibility
+      return {
+        batch_id: batch.batch_id,
+        product_name: batch.customer_order?.description || batch.name || 'Unknown Product',
+        status: 'in_progress', // Default status
+        start_date: batch.start_time || batch.creation_date,
+        end_date: batch.end_time,
+        quantity: parseFloat(String(batch.target_quantity || 0)),
+        operator_name: 'Production Team', // Default since we don't have operator relation yet
+      };
+    } catch (error: any) {
+      console.log('getBatch error:', error.response?.status, error.response?.data || error.message);
+      throw error;
+    }
   },
 
   createBatch: async (data: any) => {
-    // Transform from old interface to new
-    const newData = {
-      customer_order_id: data.customer_order_id,
-      process_id: data.process_id,
-      operator_id: data.operator_id,
-      status_id: data.status_id || 1,
-      expected_quantity: data.quantity,
-      notes: data.notes,
-    };
-    return await productionApi.createProductionBatch(newData);
+    console.log('createBatch called with:', data);
+    const response = await apiClient.post('/production-batches', data);
+    return response.data;
+  },
+
+  deleteBatch: async (id: number) => {
+    try {
+      console.log('Deleting batch with id:', id);
+      const response = await productionApi.deleteProductionBatch(id);
+      console.log('Delete response:', response);
+      return response;
+    } catch (error: any) {
+      console.log('deleteBatch error:', error.response?.status, error.response?.data || error.message);
+      throw error;
+    }
   },
 };
