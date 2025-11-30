@@ -64,10 +64,22 @@ export default function CreateBatchScreen({ navigation }: any) {
     }
 
     // Validate raw materials
+    // Validate raw materials
     const rawMaterialsPayload = selectedMaterials.map(material => ({
       raw_material_id: material.raw_material_id,
       planned_quantity: parseFloat(material.planned_quantity) || 0
     })).filter(rm => rm.planned_quantity > 0);
+
+    // Check for invalid quantities
+    const hasInvalidQuantities = selectedMaterials.some(m => {
+      const planned = parseFloat(m.planned_quantity) || 0;
+      return planned > m.available_quantity;
+    });
+
+    if (hasInvalidQuantities) {
+      Alert.alert('Error', 'Una o más materias primas exceden la cantidad disponible');
+      return;
+    }
 
     const payload = {
       order_id: parseInt(formData.order_id),
@@ -99,9 +111,9 @@ export default function CreateBatchScreen({ navigation }: any) {
     
     const newMaterial = {
       raw_material_id: availableMaterial.raw_material_id,
-      name: availableMaterial.material_base?.name || 'Material Desconocido',
+      name: availableMaterial.base?.name || availableMaterial.material_base?.name || 'Material Desconocido',
       planned_quantity: '',
-      unit: availableMaterial.material_base?.unit?.name || 'unidades',
+      unit: availableMaterial.base?.unit?.name || availableMaterial.material_base?.unit?.name || 'unidades',
       available_quantity: availableMaterial.quantity || 0
     };
     
@@ -126,9 +138,9 @@ export default function CreateBatchScreen({ navigation }: any) {
     const newMaterials = [...selectedMaterials];
     newMaterials[index] = {
       raw_material_id: material.raw_material_id,
-      name: material.material_base?.name || 'Material Desconocido',
+      name: material.base?.name || material.material_base?.name || 'Material Desconocido',
       planned_quantity: newMaterials[index].planned_quantity,
-      unit: material.material_base?.unit?.name || 'unidades',
+      unit: material.base?.unit?.name || material.material_base?.unit?.name || 'unidades',
       available_quantity: material.quantity || 0
     };
     setSelectedMaterials(newMaterials);
@@ -213,6 +225,86 @@ export default function CreateBatchScreen({ navigation }: any) {
             numberOfLines={4}
             textAlignVertical="top"
           />
+        </View>
+
+        {/* Raw Materials */}
+        <View className="mb-6">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-gray-700 font-medium">Materias Primas</Text>
+            <TouchableOpacity 
+              className="bg-blue-600 px-3 py-1.5 rounded-lg flex-row items-center"
+              onPress={addMaterial}
+            >
+              <CustomIcon name="add" size={20} color="white" />
+              <Text className="text-white text-sm font-medium ml-1">Agregar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {selectedMaterials.map((material, index) => (
+            <View key={index} className="bg-white border border-gray-300 rounded-lg p-4 mb-3">
+              <View className="flex-row justify-between items-start mb-3">
+                <Text className="text-gray-900 font-medium">Material #{index + 1}</Text>
+                <TouchableOpacity onPress={() => removeMaterial(index)}>
+                  <CustomIcon name="delete" size={20} color="#ef4444" />
+                </TouchableOpacity>
+              </View>
+
+              <View className="mb-3">
+                <Text className="text-gray-600 text-xs mb-1">Material</Text>
+                <View className="border border-gray-200 rounded-lg">
+                  <Picker
+                    selectedValue={material.raw_material_id}
+                    onValueChange={(value) => changeMaterial(index, Number(value))}
+                  >
+                    {rawMaterials?.map((rm: any) => {
+                      const name = rm.base?.name || rm.material_base?.name || 'Desconocido';
+                      const unit = rm.base?.unit?.name || rm.material_base?.unit?.name || '';
+                      return (
+                        <Picker.Item 
+                          key={rm.raw_material_id} 
+                          label={`${name} (${rm.quantity} ${unit})`} 
+                          value={rm.raw_material_id} 
+                        />
+                      );
+                    })}
+                  </Picker>
+                </View>
+              </View>
+
+              <View className="flex-row">
+                <View className="flex-1 mr-4">
+                  <Text className="text-gray-600 text-xs mb-1">Cantidad Planeada</Text>
+                  <TextInput
+                    className={`border rounded-lg px-3 py-2 ${
+                      (parseFloat(material.planned_quantity) || 0) > material.available_quantity 
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-200'
+                    }`}
+                    value={material.planned_quantity}
+                    onChangeText={(text) => updateMaterialQuantity(index, text)}
+                    keyboardType="decimal-pad"
+                    placeholder="0.00"
+                  />
+                  {(parseFloat(material.planned_quantity) || 0) > material.available_quantity && (
+                    <Text className="text-red-500 text-xs mt-1">
+                      Excede disponible ({material.available_quantity} {material.unit})
+                    </Text>
+                  )}
+                </View>
+                <View className="flex-1 justify-center pt-4">
+                   <Text className="text-gray-500 text-sm">
+                     Unidad: {material.unit}
+                   </Text>
+                </View>
+              </View>
+            </View>
+          ))}
+          
+          {selectedMaterials.length === 0 && (
+             <Text className="text-gray-500 italic text-center py-4 bg-gray-100 rounded-lg border border-dashed border-gray-300">
+               No hay materias primas asignadas
+             </Text>
+          )}
         </View>
 
         {/* Buttons */}

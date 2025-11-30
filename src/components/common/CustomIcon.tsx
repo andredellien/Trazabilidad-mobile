@@ -33,6 +33,8 @@ export const CustomIcon = ({ name, size, color, style }: CustomIconProps) => {
         return <Ionicons name="add" size={size} color={color} style={style} />;
       case 'trash':
         return <Ionicons name="trash-outline" size={size} color={color} style={style} />;
+      case 'delete':
+        return <Ionicons name="trash-outline" size={size} color={color} style={style} />;
       case 'help':
         return <Ionicons name="help-circle" size={size} color={color} style={style} />;
       default:
