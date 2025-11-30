@@ -41,11 +41,19 @@ export default function CreateMaterialScreen({ navigation }: any) {
   );
 
   // Fetch suppliers for dropdown
-  const { data: suppliers, isLoading: loadingSuppliers, error: suppliersError } = useQuery({
+  const { data: suppliers, isLoading: loadingSuppliers, error: suppliersError, refetch: refetchSuppliers } = useQuery({
     queryKey: ['suppliers'],
     queryFn: suppliersApi.getSuppliers,
     retry: false,
   });
+
+  // Refetch suppliers when screen comes into focus (after creating a new supplier)
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('CreateMaterialScreen focused - refetching suppliers');
+      refetchSuppliers();
+    }, [refetchSuppliers])
+  );
 
   const createMutation = useMutation({
     mutationFn: rawMaterialsApi.createRawMaterial,
@@ -135,7 +143,15 @@ export default function CreateMaterialScreen({ navigation }: any) {
 
         {/* Supplier */}
         <View className="mb-4">
-          <Text className="text-gray-700 font-medium mb-2">Proveedor *</Text>
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-gray-700 font-medium">Proveedor *</Text>
+            <TouchableOpacity 
+              className="bg-green-600 px-3 py-1 rounded-lg flex-row items-center"
+              onPress={() => navigation.navigate('CreateSupplier')}
+            >
+              <Text className="text-white text-sm font-medium">+ Agregar Proveedor</Text>
+            </TouchableOpacity>
+          </View>
           <View className="bg-white border border-gray-300 rounded-lg">
             <Picker
               selectedValue={formData.supplier_id}

@@ -12,7 +12,18 @@ export default function ProfileScreen() {
       '¿Estás seguro de que deseas cerrar sesión?',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Cerrar Sesión', style: 'destructive', onPress: logout },
+        { 
+          text: 'Cerrar Sesión', 
+          style: 'destructive', 
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              console.error('Logout failed:', error);
+              Alert.alert('Error', 'No se pudo cerrar sesión. Intente nuevamente.');
+            }
+          }
+        },
       ]
     );
   };

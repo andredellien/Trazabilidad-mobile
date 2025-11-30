@@ -5,7 +5,7 @@ export interface Supplier {
   business_name: string;
   trading_name?: string;
   tax_id?: string;
-  contact_name?: string;
+  contact_person?: string;
   phone?: string;
   email?: string;
   address?: string;

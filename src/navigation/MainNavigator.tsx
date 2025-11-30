@@ -11,6 +11,7 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import RawMaterialsScreen from '../screens/materials/RawMaterialsScreen';
 import CreateMaterialScreen from '../screens/materials/CreateMaterialScreen';
 import CreateMaterialBaseScreen from '../screens/materials/CreateMaterialBaseScreen';
+import CreateSupplierScreen from '../screens/materials/CreateSupplierScreen';
 import OrdersScreen from '../screens/orders/OrdersScreen';
 
 const Tab = createBottomTabNavigator();
@@ -32,6 +33,7 @@ function MaterialsStack() {
       <Stack.Screen name="RawMaterials" component={RawMaterialsScreen} options={{ title: 'Materias Primas' }} />
       <Stack.Screen name="CreateMaterial" component={CreateMaterialScreen} options={{ title: 'Nueva Materia Prima' }} />
       <Stack.Screen name="CreateMaterialBase" component={CreateMaterialBaseScreen} options={{ title: 'Nueva Base' }} />
+      <Stack.Screen name="CreateSupplier" component={CreateSupplierScreen} options={{ title: 'Nuevo Proveedor' }} />
     </Stack.Navigator>
   );
 }
