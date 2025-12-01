@@ -1,12 +1,10 @@
 import React from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigation } from '@react-navigation/native';
 import { processesApi } from '../../api/processes.api';
 import { CustomIcon } from '../../components/common/CustomIcon';
 
-export default function ProcessesListScreen() {
-  const navigation = useNavigation<any>();
+export default function ProcessesListScreen({ navigation }: any) {
   
   const { data: processes, isLoading, error, refetch } = useQuery({
     queryKey: ['processes'],

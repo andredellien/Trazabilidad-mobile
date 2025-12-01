@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CustomIcon } from '../components/common/CustomIcon';
 
 import HomeScreen from '../screens/home/HomeScreen';
-import BatchListScreen from '../screens/production/BatchListScreen';
+import ProductionMainScreen from '../screens/production/ProductionMainScreen';
 import BatchDetailScreen from '../screens/production/BatchDetailScreen';
 import CreateBatchScreen from '../screens/production/CreateBatchScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
@@ -18,6 +18,10 @@ import CreateMachineScreen from '../screens/processes/CreateMachineScreen';
 import CreateProcessScreen from '../screens/processes/CreateProcessScreen';
 import ProcessDetailScreen from '../screens/processes/ProcessDetailScreen';
 import EditProcessScreen from '../screens/processes/EditProcessScreen';
+import ProcessTransformationScreen from '../screens/production/ProcessTransformationScreen';
+import RecordVariablesScreen from '../screens/production/RecordVariablesScreen';
+import FinalizeCertificationScreen from '../screens/production/FinalizeCertificationScreen';
+import CertificationLogScreen from '../screens/production/CertificationLogScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -25,9 +29,13 @@ const Stack = createNativeStackNavigator();
 function ProductionStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="BatchList" component={BatchListScreen} options={{ title: 'Lotes de Producción' }} />
+      <Stack.Screen name="ProductionDashboard" component={ProductionMainScreen} options={{ title: 'Producción' }} />
       <Stack.Screen name="BatchDetail" component={BatchDetailScreen} options={{ title: 'Detalle del Lote' }} />
       <Stack.Screen name="CreateBatch" component={CreateBatchScreen} options={{ title: 'Nuevo Lote' }} />
+      <Stack.Screen name="ProcessTransformation" component={ProcessTransformationScreen} options={{ title: 'Proceso de Transformación' }} />
+      <Stack.Screen name="RecordVariables" component={RecordVariablesScreen} options={{ title: 'Registrar Variables' }} />
+      <Stack.Screen name="FinalizeCertification" component={FinalizeCertificationScreen} options={{ title: 'Finalizar Certificación' }} />
+      <Stack.Screen name="CertificationLog" component={CertificationLogScreen} options={{ title: 'Certificado' }} />
     </Stack.Navigator>
   );
 }

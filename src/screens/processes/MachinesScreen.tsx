@@ -1,12 +1,10 @@
 import React from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigation } from '@react-navigation/native';
 import { machinesApi } from '../../api/machines.api';
 import { CustomIcon } from '../../components/common/CustomIcon';
 
-export default function MachinesScreen() {
-  const navigation = useNavigation<any>();
+export default function MachinesScreen({ navigation }: any) {
   
   const { data: machines, isLoading, error, refetch } = useQuery({
     queryKey: ['machines'],

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView, ScrollView, TextInput, Alert, TouchableOpacity, Modal } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Picker } from '@react-native-picker/picker';
 import { processesApi, ProcessMachine, ProcessMachineVariable } from '../../api/processes.api';
 import { machinesApi } from '../../api/machines.api';
 import { standardVariablesApi } from '../../api/standardVariables.api';
 import { Button } from '../../components/common/Button';
 import { CustomIcon } from '../../components/common/CustomIcon';
+import { CustomPicker } from '../../components/common/CustomPicker';
 
 export default function CreateProcessScreen({ navigation }: any) {
   const queryClient = useQueryClient();
@@ -148,12 +148,15 @@ export default function CreateProcessScreen({ navigation }: any) {
       return;
     }
 
-    createMutation.mutate({
+    const payload = {
       name: formData.name,
       description: formData.description || undefined,
       active: true,
       process_machines: steps.length > 0 ? steps : undefined,
-    });
+    };
+    
+    console.log('Creating process with payload:', JSON.stringify(payload, null, 2));
+    createMutation.mutate(payload);
   };
 
   return (
@@ -287,24 +290,17 @@ export default function CreateProcessScreen({ navigation }: any) {
           <View className="bg-white rounded-xl p-6 mb-6 shadow-lg border border-blue-200">
             <Text className="text-xl font-bold text-gray-900 mb-4">Agregar Nuevo Paso</Text>
 
-            <View className="mb-4">
-              <Text className="text-gray-700 font-medium mb-2">Máquina *</Text>
-              <View className="bg-gray-50 border border-gray-300 rounded-lg">
-                <Picker
-                  selectedValue={currentStep.machine_id}
-                  onValueChange={(value) => setCurrentStep({ ...currentStep, machine_id: value })}
-                >
-                  <Picker.Item label="Seleccionar máquina..." value={0} />
-                  {machines?.map((machine: any) => (
-                    <Picker.Item
-                      key={machine.machine_id}
-                      label={`${machine.name} (${machine.code})`}
-                      value={machine.machine_id}
-                    />
-                  ))}
-                </Picker>
-              </View>
-            </View>
+              <CustomPicker
+                label="Máquina"
+                required
+                selectedValue={currentStep.machine_id}
+                onValueChange={(value) => setCurrentStep({ ...currentStep, machine_id: value })}
+                items={(machines as any[])?.map((machine: any) => ({
+                  label: `${machine.name} (${machine.code})`,
+                  value: machine.machine_id,
+                })) || []}
+                placeholder="Seleccionar máquina..."
+              />
 
             <View className="mb-4">
               <Text className="text-gray-700 font-medium mb-2">Nombre del Paso *</Text>
@@ -485,26 +481,19 @@ export default function CreateProcessScreen({ navigation }: any) {
                 <View className="bg-white rounded-xl p-6 shadow-lg">
                   <Text className="text-lg font-bold text-gray-900 mb-4">Nueva Variable</Text>
 
-                  <View className="mb-4">
-                    <Text className="text-gray-700 font-medium mb-2">Variable Estándar *</Text>
-                    <View className="bg-gray-50 border border-gray-300 rounded-lg">
-                      <Picker
-                        selectedValue={currentVariable.standard_variable_id}
-                        onValueChange={(value) =>
-                          setCurrentVariable({ ...currentVariable, standard_variable_id: value })
-                        }
-                      >
-                        <Picker.Item label="Seleccionar variable..." value={0} />
-                        {standardVariables?.map((variable: any) => (
-                          <Picker.Item
-                            key={variable.variable_id}
-                            label={`${variable.name}${variable.unit ? ` (${variable.unit})` : ''}`}
-                            value={variable.variable_id}
-                          />
-                        ))}
-                      </Picker>
-                    </View>
-                  </View>
+                    <CustomPicker
+                      label="Variable Estándar"
+                      required
+                      selectedValue={currentVariable.standard_variable_id}
+                      onValueChange={(value) =>
+                        setCurrentVariable({ ...currentVariable, standard_variable_id: value })
+                      }
+                      items={(standardVariables as any[])?.map((variable: any) => ({
+                        label: `${variable.name}${variable.unit ? ` (${variable.unit})` : ''}`,
+                        value: variable.variable_id,
+                      })) || []}
+                      placeholder="Seleccionar variable..."
+                    />
 
                   <View className="flex-row gap-3 mb-4">
                     <View className="flex-1">
