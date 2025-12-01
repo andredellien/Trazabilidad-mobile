@@ -20,14 +20,24 @@ export interface CustomerOrder {
   delivery_date?: string;
   priority: number;
   description?: string;
+  quantity?: number;
   observations?: string;
   customer?: Customer;
+}
+
+export interface CreateCustomerOrderData {
+  customer_id: number;
+  description?: string;
+  quantity?: number;
+  priority: number;
+  delivery_date?: string;
+  observations?: string;
 }
 
 export const customersApi = {
   // Customers
   getCustomers: async () => {
-    const response = await apiClient.get<Customer[]>('/customers');
+    const response = await apiClient.get('/customers');
     return response.data;
   },
 

@@ -10,6 +10,7 @@ export interface RawMaterialBase {
   available_quantity: number;
   minimum_stock: number;
   maximum_stock?: number;
+  image_url?: string;
   active: boolean;
   category?: {
     category_id: number;
@@ -19,6 +20,7 @@ export interface RawMaterialBase {
     unit_id: number;
     code: string;
     name: string;
+    abbreviation?: string;
   };
 }
 
@@ -34,7 +36,7 @@ export interface RawMaterial {
   available_quantity: number;
   receipt_conformity?: boolean;
   observations?: string;
-  base?: RawMaterialBase;
+  material_base?: RawMaterialBase;
   supplier?: {
     supplier_id: number;
     business_name: string;

@@ -12,7 +12,10 @@ import RawMaterialsScreen from '../screens/materials/RawMaterialsScreen';
 import CreateMaterialScreen from '../screens/materials/CreateMaterialScreen';
 import CreateMaterialBaseScreen from '../screens/materials/CreateMaterialBaseScreen';
 import CreateSupplierScreen from '../screens/materials/CreateSupplierScreen';
+import RawMaterialDetailScreen from '../screens/materials/RawMaterialDetailScreen';
 import OrdersScreen from '../screens/orders/OrdersScreen';
+import CreateOrderScreen from '../screens/orders/CreateOrderScreen';
+import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
 import ProcessesMainScreen from '../screens/processes/ProcessesMainScreen';
 import CreateMachineScreen from '../screens/processes/CreateMachineScreen';
 import CreateProcessScreen from '../screens/processes/CreateProcessScreen';
@@ -46,7 +49,9 @@ function MaterialsStack() {
       <Stack.Screen name="RawMaterials" component={RawMaterialsScreen} options={{ title: 'Materias Primas' }} />
       <Stack.Screen name="CreateMaterial" component={CreateMaterialScreen} options={{ title: 'Nueva Materia Prima' }} />
       <Stack.Screen name="CreateMaterialBase" component={CreateMaterialBaseScreen} options={{ title: 'Nueva Base' }} />
+
       <Stack.Screen name="CreateSupplier" component={CreateSupplierScreen} options={{ title: 'Nuevo Proveedor' }} />
+      <Stack.Screen name="MaterialDetail" component={RawMaterialDetailScreen} options={{ title: 'Detalle de Materia Prima' }} />
     </Stack.Navigator>
   );
 }
@@ -55,6 +60,8 @@ function OrdersStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: 'Órdenes' }} />
+      <Stack.Screen name="CreateOrder" component={CreateOrderScreen} options={{ title: 'Nuevo Pedido' }} />
+      <Stack.Screen name="OrderDetail" component={OrderDetailScreen} options={{ title: 'Detalle del Pedido' }} />
     </Stack.Navigator>
   );
 }

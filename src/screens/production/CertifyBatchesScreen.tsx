@@ -17,9 +17,17 @@ export default function CertifyBatchesScreen({ navigation }: any) {
   const getFilteredBatches = () => {
     if (!batches) return [];
     
-    // TODO: Implement filtering logic based on certification status
-    // For now, return all batches
-    return batches;
+    switch (filter) {
+      case 'pending':
+        // Batches without process assigned or not started
+        return batches.filter((batch: any) => !batch.process_id && !batch.certification_status);
+      case 'ready':
+        // Batches with process completed and ready for final certification
+        return batches.filter((batch: any) => batch.certification_status === 'ready' || batch.all_steps_completed);
+      case 'all':
+      default:
+        return batches;
+    }
   };
 
   const filteredBatches = getFilteredBatches();
