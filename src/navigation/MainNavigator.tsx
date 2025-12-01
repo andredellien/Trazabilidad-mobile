@@ -13,8 +13,11 @@ import CreateMaterialScreen from '../screens/materials/CreateMaterialScreen';
 import CreateMaterialBaseScreen from '../screens/materials/CreateMaterialBaseScreen';
 import CreateSupplierScreen from '../screens/materials/CreateSupplierScreen';
 import OrdersScreen from '../screens/orders/OrdersScreen';
-import ProcessesScreen from '../screens/processes/ProcessesScreen';
+import ProcessesMainScreen from '../screens/processes/ProcessesMainScreen';
 import CreateMachineScreen from '../screens/processes/CreateMachineScreen';
+import CreateProcessScreen from '../screens/processes/CreateProcessScreen';
+import ProcessDetailScreen from '../screens/processes/ProcessDetailScreen';
+import EditProcessScreen from '../screens/processes/EditProcessScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -51,8 +54,11 @@ function OrdersStack() {
 function ProcessesStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Processes" component={ProcessesScreen} options={{ title: 'Gestión de Procesos' }} />
+      <Stack.Screen name="ProcessesDashboard" component={ProcessesMainScreen} options={{ title: 'Gestión de Procesos' }} />
       <Stack.Screen name="CreateMachine" component={CreateMachineScreen} options={{ title: 'Nueva Máquina' }} />
+      <Stack.Screen name="CreateProcess" component={CreateProcessScreen} options={{ title: 'Nuevo Proceso' }} />
+      <Stack.Screen name="ProcessDetail" component={ProcessDetailScreen} options={{ title: 'Detalle del Proceso' }} />
+      <Stack.Screen name="EditProcess" component={EditProcessScreen} options={{ title: 'Editar Proceso' }} />
     </Stack.Navigator>
   );
 }

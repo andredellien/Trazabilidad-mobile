@@ -39,6 +39,10 @@ export const CustomIcon = ({ name, size, color, style }: CustomIconProps) => {
         return <Ionicons name="settings-outline" size={size} color={color} style={style} />;
       case 'help':
         return <Ionicons name="help-circle" size={size} color={color} style={style} />;
+      case 'time':
+        return <Ionicons name="time-outline" size={size} color={color} style={style} />;
+      case 'edit':
+        return <Ionicons name="create-outline" size={size} color={color} style={style} />;
       default:
         return <Ionicons name="help-circle" size={size} color={color} style={style} />;
     }
