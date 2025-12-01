@@ -13,6 +13,8 @@ import CreateMaterialScreen from '../screens/materials/CreateMaterialScreen';
 import CreateMaterialBaseScreen from '../screens/materials/CreateMaterialBaseScreen';
 import CreateSupplierScreen from '../screens/materials/CreateSupplierScreen';
 import OrdersScreen from '../screens/orders/OrdersScreen';
+import ProcessesScreen from '../screens/processes/ProcessesScreen';
+import CreateMachineScreen from '../screens/processes/CreateMachineScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -46,6 +48,15 @@ function OrdersStack() {
   );
 }
 
+function ProcessesStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Processes" component={ProcessesScreen} options={{ title: 'Gestión de Procesos' }} />
+      <Stack.Screen name="CreateMachine" component={CreateMachineScreen} options={{ title: 'Nueva Máquina' }} />
+    </Stack.Navigator>
+  );
+}
+
 function ProfileStack() {
   return (
     <Stack.Navigator>
@@ -74,6 +85,9 @@ export default function MainNavigator() {
             case 'Orders':
               iconName = 'assignment';
               break;
+            case 'Processes':
+              iconName = 'settings';
+              break;
             case 'Profile':
               iconName = 'person';
               break;
@@ -90,6 +104,7 @@ export default function MainNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio' }} />
       <Tab.Screen name="Production" component={ProductionStack} options={{ headerShown: false, title: 'Producción' }} />
       <Tab.Screen name="Materials" component={MaterialsStack} options={{ headerShown: false, title: 'Materiales' }} />
+      <Tab.Screen name="Processes" component={ProcessesStack} options={{ headerShown: false, title: 'Procesos' }} />
       <Tab.Screen name="Orders" component={OrdersStack} options={{ headerShown: false, title: 'Órdenes' }} />
       <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false, title: 'Perfil' }} />
     </Tab.Navigator>
