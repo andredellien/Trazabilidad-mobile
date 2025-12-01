@@ -9,6 +9,21 @@ export interface Machine {
   active: boolean;
 }
 
+export interface ProcessMachineVariable {
+  variable_id?: number;
+  standard_variable_id: number;
+  min_value?: number;
+  max_value?: number;
+  target_value?: number;
+  mandatory: boolean;
+  standardVariable?: {
+    variable_id: number;
+    code: string;
+    name: string;
+    unit?: string;
+  };
+}
+
 export interface ProcessMachine {
   process_machine_id?: number;
   process_id?: number;
@@ -18,6 +33,7 @@ export interface ProcessMachine {
   description?: string;
   estimated_time?: number;
   machine?: Machine;
+  variables?: ProcessMachineVariable[];
 }
 
 export interface Process {
