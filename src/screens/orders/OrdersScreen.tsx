@@ -127,12 +127,20 @@ export default function OrdersScreen({ navigation }: any) {
         {/* Header */}
         <View className="bg-white p-4 border-b border-gray-200 flex-row justify-between items-center">
           <Text className="text-xl font-bold text-gray-900">Pedidos de Clientes</Text>
-          <TouchableOpacity
-            className="bg-blue-600 p-3 rounded-lg shadow-sm"
-            onPress={() => navigation.navigate('CreateOrder')}
-          >
-            <CustomIcon name="add" size={24} color="white" />
-          </TouchableOpacity>
+          <View className="flex-row">
+            <TouchableOpacity
+              className="bg-yellow-100 p-3 rounded-lg shadow-sm mr-2"
+              onPress={() => navigation.navigate('PendingApprovals')}
+            >
+              <CustomIcon name="time" size={24} color="#854D0E" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="bg-blue-600 p-3 rounded-lg shadow-sm"
+              onPress={() => navigation.navigate('CreateOrder')}
+            >
+              <CustomIcon name="add" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Orders List */}

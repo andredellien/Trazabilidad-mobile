@@ -182,7 +182,7 @@ export default function CreateBatchScreen({ navigation }: any) {
               {Array.isArray(orders) && orders.map((order: any) => (
                 <Picker.Item 
                   key={order.order_id} 
-                  label={`${order.order_number} - ${order.description || 'Sin descripción'}`} 
+                  label={`${order.name || order.description || 'Sin descripción'}`} 
                   value={order.order_id.toString()} 
                 />
               ))}

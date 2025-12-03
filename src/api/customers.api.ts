@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { OrderProduct } from './orders.api';
 
 export interface Customer {
   customer_id: number;
@@ -9,29 +10,48 @@ export interface Customer {
   phone?: string;
   email?: string;
   contact_person?: string;
-  active: boolean;
+  active?: boolean;
 }
 
 export interface CustomerOrder {
   order_id: number;
   customer_id: number;
   order_number: string;
-  creation_date: string;
+  creation_date?: string;
   delivery_date?: string;
   priority: number;
   description?: string;
   quantity?: number;
   observations?: string;
+  status?: string;
   customer?: Customer;
+  orderProducts?: OrderProduct[];
 }
 
-export interface CreateCustomerOrderData {
+export interface CreateOrderPayload {
   customer_id: number;
+  name: string;
   description?: string;
-  quantity?: number;
   priority: number;
   delivery_date?: string;
-  observations?: string;
+  products: {
+    product_id: number;
+    quantity: number;
+    observations?: string;
+  }[];
+  destinations: {
+    address: string;
+    reference?: string;
+    contact_name?: string;
+    contact_phone?: string;
+    delivery_instructions?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    products: {
+      order_product_index: number;
+      quantity: number;
+    }[];
+  }[];
 }
 
 export const customersApi = {
@@ -88,7 +108,7 @@ export const customersApi = {
     return response.data;
   },
 
-  createCustomerOrder: async (data: Partial<CustomerOrder>) => {
+  createCustomerOrder: async (data: CreateOrderPayload) => {
     const response = await apiClient.post<CustomerOrder>('/customer-orders', data);
     return response.data;
   },

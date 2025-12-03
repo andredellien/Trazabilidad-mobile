@@ -16,6 +16,7 @@ import RawMaterialDetailScreen from '../screens/materials/RawMaterialDetailScree
 import OrdersScreen from '../screens/orders/OrdersScreen';
 import CreateOrderScreen from '../screens/orders/CreateOrderScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
+import PendingApprovalsScreen from '../screens/orders/PendingApprovalsScreen';
 import ProcessesMainScreen from '../screens/processes/ProcessesMainScreen';
 import CreateMachineScreen from '../screens/processes/CreateMachineScreen';
 import CreateProcessScreen from '../screens/processes/CreateProcessScreen';
@@ -62,6 +63,7 @@ function OrdersStack() {
       <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: 'Órdenes' }} />
       <Stack.Screen name="CreateOrder" component={CreateOrderScreen} options={{ title: 'Nuevo Pedido' }} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} options={{ title: 'Detalle del Pedido' }} />
+      <Stack.Screen name="PendingApprovals" component={PendingApprovalsScreen} options={{ title: 'Aprobaciones Pendientes' }} />
     </Stack.Navigator>
   );
 }
@@ -123,10 +125,10 @@ export default function MainNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio' }} />
-      <Tab.Screen name="Production" component={ProductionStack} options={{ headerShown: false, title: 'Producción' }} />
-      <Tab.Screen name="Materials" component={MaterialsStack} options={{ headerShown: false, title: 'Materiales' }} />
-      <Tab.Screen name="Processes" component={ProcessesStack} options={{ headerShown: false, title: 'Procesos' }} />
       <Tab.Screen name="Orders" component={OrdersStack} options={{ headerShown: false, title: 'Órdenes' }} />
+      <Tab.Screen name="Materials" component={MaterialsStack} options={{ headerShown: false, title: 'Materiales' }} />
+      <Tab.Screen name="Production" component={ProductionStack} options={{ headerShown: false, title: 'Lotes' }} />
+      <Tab.Screen name="Processes" component={ProcessesStack} options={{ headerShown: false, title: 'Procesos' }} />
       <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false, title: 'Perfil' }} />
     </Tab.Navigator>
   );
