@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect } from '@react-navigation/native';
 import { productionApi } from '../../api/production.api';
 import { CustomIcon } from '../../components/common/CustomIcon';
 
@@ -14,16 +15,23 @@ export default function CertifyBatchesScreen({ navigation }: any) {
     queryFn: productionApi.getBatches,
   });
 
+  // Refetch batches when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
+
   const getFilteredBatches = () => {
     if (!batches) return [];
     
     switch (filter) {
       case 'pending':
-        // Batches without process assigned or not started
-        return batches.filter((batch: any) => !batch.process_id && !batch.certification_status);
+        // Batches in progress (not yet certified)
+        return batches.filter((batch: any) => batch.status === 'in_progress');
       case 'ready':
-        // Batches with process completed and ready for final certification
-        return batches.filter((batch: any) => batch.certification_status === 'ready' || batch.all_steps_completed);
+        // Batches that are certified or not certified (completed)
+        return batches.filter((batch: any) => batch.status === 'completed' || batch.status === 'failed');
       case 'all':
       default:
         return batches;
@@ -94,40 +102,72 @@ export default function CertifyBatchesScreen({ navigation }: any) {
         data={filteredBatches}
         keyExtractor={(item) => item.batch_id.toString()}
         contentContainerStyle={{ padding: 16 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 p-4"
-            onPress={() => navigation.navigate('ProcessTransformation', { batchId: item.batch_id })}
-          >
-            <View className="flex-row justify-between items-start mb-3">
-              <View className="flex-1">
-                <Text className="text-lg font-bold text-gray-900">{item.product_name}</Text>
-                <Text className="text-xs text-blue-600 font-medium">Lote #{item.batch_id}</Text>
+        renderItem={({ item }) => {
+          // Determine badge color and text based on status
+          const getStatusBadge = () => {
+            switch (item.status) {
+              case 'completed':
+                return { bg: 'bg-green-100', text: 'text-green-800', label: 'CERTIFICADO' };
+              case 'failed':
+                return { bg: 'bg-red-100', text: 'text-red-800', label: 'NO CERTIFICADO' };
+              default:
+                return { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'PENDIENTE' };
+            }
+          };
+          
+          const statusBadge = getStatusBadge();
+          
+          return (
+            <TouchableOpacity
+              className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 p-4"
+              onPress={() => {
+                // If certified or not certified, show certification log. Otherwise, start process
+                if (item.status === 'completed' || item.status === 'failed') {
+                  navigation.navigate('CertificationLog', { batchId: item.batch_id });
+                } else {
+                  navigation.navigate('ProcessTransformation', { batchId: item.batch_id });
+                }
+              }}
+            >
+              <View className="flex-row justify-between items-start mb-3">
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-gray-900">{item.product_name}</Text>
+                  <Text className="text-xs text-blue-600 font-medium">Lote #{item.batch_id}</Text>
+                </View>
+                <View className={`${statusBadge.bg} px-3 py-1 rounded-full`}>
+                  <Text className={`text-xs font-medium ${statusBadge.text}`}>{statusBadge.label}</Text>
+                </View>
               </View>
-              <View className="bg-yellow-100 px-3 py-1 rounded-full">
-                <Text className="text-xs font-medium text-yellow-800">PENDIENTE</Text>
-              </View>
-            </View>
 
-            <View className="flex-row items-center mb-2">
-              <CustomIcon name="assignment" size={16} color="#6B7280" />
-              <Text className="text-sm text-gray-600 ml-2">Sin proceso asignado</Text>
-            </View>
+              <View className="flex-row items-center mb-2">
+                <CustomIcon name="assignment" size={16} color="#6B7280" />
+                <Text className="text-sm text-gray-600 ml-2">Sin proceso asignado</Text>
+              </View>
 
-            <View className="flex-row items-center pt-3 border-t border-gray-100">
-              <View className="flex-1 flex-row items-center">
-                <CustomIcon name="time" size={14} color="#6B7280" />
-                <Text className="text-xs text-gray-500 ml-1">
-                  {new Date(item.start_date).toLocaleDateString()}
-                </Text>
+              <View className="flex-row items-center pt-3 border-t border-gray-100">
+                <View className="flex-1 flex-row items-center">
+                  <CustomIcon name="time" size={14} color="#6B7280" />
+                  <Text className="text-xs text-gray-500 ml-1">
+                    {new Date(item.start_date).toLocaleDateString()}
+                  </Text>
+                </View>
+                <View className="flex-row items-center">
+                  {item.status === 'completed' || item.status === 'failed' ? (
+                    <>
+                      <Text className="text-xs text-blue-600 font-semibold mr-1">Ver Detalles</Text>
+                      <CustomIcon name="eye" size={14} color="#2563EB" />
+                    </>
+                  ) : (
+                    <>
+                      <Text className="text-xs text-blue-600 font-semibold mr-1">Iniciar</Text>
+                      <CustomIcon name="arrow-forward" size={14} color="#2563EB" />
+                    </>
+                  )}
+                </View>
               </View>
-              <View className="flex-row items-center">
-                <Text className="text-xs text-blue-600 font-semibold mr-1">Iniciar</Text>
-                <CustomIcon name="arrow-forward" size={14} color="#2563EB" />
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
+            </TouchableOpacity>
+          );
+        }}
         ListEmptyComponent={
           <View className="items-center py-16">
             <CustomIcon name="assignment" size={64} color="#D1D5DB" />

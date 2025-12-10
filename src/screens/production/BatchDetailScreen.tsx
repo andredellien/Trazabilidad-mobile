@@ -33,7 +33,7 @@ export default function BatchDetailScreen({ route, navigation }: any) {
   const handleDelete = () => {
     Alert.alert(
       'Confirmar eliminación',
-      `¿Está seguro que desea eliminar el lote "${batch?.product_name}"?`,
+      `¿Está seguro que desea eliminar el lote "${batch?.name || 'Lote de Producción'}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         { 
@@ -66,19 +66,34 @@ export default function BatchDetailScreen({ route, navigation }: any) {
     pending: 'bg-yellow-100 text-yellow-800',
     in_progress: 'bg-blue-100 text-blue-800',
     completed: 'bg-green-100 text-green-800',
+    certified: 'bg-green-100 text-green-800',
+    not_certified: 'bg-red-100 text-red-800',
     failed: 'bg-red-100 text-red-800',
   };
+
+  const statusLabels: Record<string, string> = {
+    pending: 'PENDIENTE',
+    in_progress: 'EN PROGRESO',
+    completed: 'COMPLETADO',
+    certified: 'CERTIFICADO',
+    not_certified: 'NO CERTIFICADO',
+    failed: 'FALLIDO',
+  };
+
+  const currentStatus = batch.status || 'in_progress';
+  const statusColor = statusColors[currentStatus] || statusColors.in_progress;
+  const statusLabel = statusLabels[currentStatus] || currentStatus.toUpperCase();
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1 p-4">
         <View className="bg-white rounded-lg p-6 mb-4">
           <View className="flex-row justify-between items-start mb-4">
-            <Text className="text-2xl font-bold text-gray-900 flex-1 mr-4">{batch.product_name}</Text>
+            <Text className="text-2xl font-bold text-gray-900 flex-1 mr-4">{batch.name || 'Lote de Producción'}</Text>
             <View className="flex-row items-center space-x-2">
-              <View className={`px-3 py-1 rounded-full ${statusColors[batch.status].split(' ')[0]}`}>
-                <Text className={`text-sm font-medium ${statusColors[batch.status].split(' ')[1]}`}>
-                  {batch.status === 'pending' ? 'PENDIENTE' : batch.status === 'in_progress' ? 'EN PROGRESO' : batch.status === 'completed' ? 'COMPLETADO' : 'FALLIDO'}
+              <View className={`px-3 py-1 rounded-full ${statusColor.split(' ')[0]}`}>
+                <Text className={`text-sm font-medium ${statusColor.split(' ')[1]}`}>
+                  {statusLabel}
                 </Text>
               </View>
               <TouchableOpacity 
@@ -93,8 +108,8 @@ export default function BatchDetailScreen({ route, navigation }: any) {
 
           <View className="space-y-4">
             <View>
-              <Text className="text-gray-500 text-sm">ID de Lote</Text>
-              <Text className="text-lg font-semibold">#{batch.batch_id}</Text>
+              <Text className="text-gray-500 text-sm">Código de Lote</Text>
+              <Text className="text-lg font-semibold">{batch.batch_code || `#${batch.batch_id}`}</Text>
             </View>
 
             <View className="flex-row justify-between">
@@ -123,25 +138,36 @@ export default function BatchDetailScreen({ route, navigation }: any) {
           </View>
         </View>
 
-        <View className="space-y-3">
-          <Button
-            title="Transformación de Proceso"
-            onPress={() => navigation.navigate('ProcessTransformation', { batchId })}
-            variant="primary"
-          />
-          
-          <Button
-            title="Control de Calidad"
-            onPress={() => navigation.navigate('QualityControl', { batchId })}
-            variant="secondary"
-          />
-          
-          <Button
-            title="Uso de Materiales"
-            onPress={() => navigation.navigate('MaterialUsage', { batchId })}
-            variant="outline"
-          />
-        </View>
+        {/* Actions based on batch status */}
+        {(currentStatus === 'certified' || currentStatus === 'not_certified') ? (
+          <View className="space-y-3">
+            <Button
+              title="Ver Registro de Certificación"
+              onPress={() => navigation.navigate('CertificationLog', { batchId })}
+              variant="primary"
+            />
+          </View>
+        ) : (
+          <View className="space-y-3">
+            <Button
+              title="Transformación de Proceso"
+              onPress={() => navigation.navigate('ProcessTransformation', { batchId })}
+              variant="primary"
+            />
+            
+            <Button
+              title="Control de Calidad"
+              onPress={() => navigation.navigate('QualityControl', { batchId })}
+              variant="secondary"
+            />
+            
+            <Button
+              title="Uso de Materiales"
+              onPress={() => navigation.navigate('MaterialUsage', { batchId })}
+              variant="outline"
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,11 +1,12 @@
 import { apiClient } from './client';
 
+// UnitOfMeasure interface matching Spanish database schema (table: unidad_medida)
 export interface UnitOfMeasure {
-  unit_id: number;
-  code: string;
-  name: string;
-  abbreviation?: string;
-  active: boolean;
+  unidad_id: number;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  activo: boolean;
 }
 
 export const unitsApi = {

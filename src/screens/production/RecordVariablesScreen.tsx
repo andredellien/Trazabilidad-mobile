@@ -39,7 +39,7 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
     color: string;
   } => {
     if (!value) {
-      if (variable.mandatory) {
+      if (variable.mandatory || variable.obligatorio) {
         return { isValid: false, message: 'Obligatoria', color: '#EF4444' };
       }
       return { isValid: true, color: '#6B7280' };
@@ -50,12 +50,15 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
       return { isValid: false, message: 'Valor inválido', color: '#EF4444' };
     }
 
-    if (variable.min_value !== undefined && numValue < variable.min_value) {
-      return { isValid: false, message: `Mínimo: ${variable.min_value}`, color: '#EF4444' };
+    const min = variable.min_value ?? variable.valor_minimo;
+    const max = variable.max_value ?? variable.valor_maximo;
+
+    if (min !== undefined && numValue < min) {
+      return { isValid: false, message: `Mínimo: ${min}`, color: '#EF4444' };
     }
 
-    if (variable.max_value !== undefined && numValue > variable.max_value) {
-      return { isValid: false, message: `Máximo: ${variable.max_value}`, color: '#EF4444' };
+    if (max !== undefined && numValue > max) {
+      return { isValid: false, message: `Máximo: ${max}`, color: '#EF4444' };
     }
 
     return { isValid: true, message: '✓ Válido', color: '#10B981' };
@@ -67,10 +70,12 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
     let hasErrors = false;
 
     processMachine.variables?.forEach((variable) => {
-      const varName = variable.standardVariable?.code || variable.standardVariable?.name || '';
+      // Handle both camelCase and snake_case from API
+      const stdVar = (variable as any).standard_variable || variable.standardVariable;
+      const varName = stdVar?.code || stdVar?.codigo || stdVar?.name || stdVar?.nombre || '';
       const value = variables[varName];
 
-      if (variable.mandatory && !value) {
+      if ((variable.mandatory || variable.obligatorio) && !value) {
         hasErrors = true;
         return;
       }
@@ -92,14 +97,15 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
 
     recordMutation.mutate({
       batch_id: batchId,
-      process_machine_id: processMachine.process_machine_id,
+      process_machine_id: processMachine.process_machine_id || processMachine.proceso_maquina_id,
       entered_variables: enteredVariables,
       observations: observations || undefined,
     });
   };
 
   const allValid = processMachine.variables?.every((variable) => {
-    const varName = variable.standardVariable?.code || variable.standardVariable?.name || '';
+    const stdVar = (variable as any).standard_variable || variable.standardVariable;
+    const varName = stdVar?.code || stdVar?.codigo || stdVar?.name || stdVar?.nombre || '';
     const validation = validateVariable(variable, variables[varName] || '');
     return validation.isValid;
   }) ?? true;
@@ -124,7 +130,8 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
         <View className="p-4">
           {processMachine.variables && processMachine.variables.length > 0 ? (
             processMachine.variables.map((variable, index) => {
-              const varName = variable.standardVariable?.code || variable.standardVariable?.name || '';
+              const stdVar = (variable as any).standard_variable || variable.standardVariable;
+              const varName = stdVar?.code || stdVar?.codigo || stdVar?.name || stdVar?.nombre || '';
               const value = variables[varName] || '';
               const validation = validateVariable(variable, value);
 
@@ -134,11 +141,11 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
                   <View className="flex-row justify-between items-start mb-3">
                     <View className="flex-1">
                       <Text className="text-base font-bold text-gray-900">
-                        {variable.standardVariable?.name}
-                        {variable.mandatory && <Text className="text-red-600"> *</Text>}
+                        {stdVar?.name || stdVar?.nombre}
+                        {(variable.mandatory || variable.obligatorio) && <Text className="text-red-600"> *</Text>}
                       </Text>
-                      {variable.standardVariable?.unit && (
-                        <Text className="text-sm text-gray-600">Unidad: {variable.standardVariable.unit}</Text>
+                      {(stdVar?.unit || stdVar?.unidad) && (
+                        <Text className="text-sm text-gray-600">Unidad: {stdVar?.unit || stdVar?.unidad}</Text>
                       )}
                     </View>
                     {validation.message && (
@@ -153,22 +160,22 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
                   {/* Range Indicators */}
                   <View className="bg-gray-50 rounded-lg p-3 mb-3">
                     <View className="flex-row justify-between">
-                      {variable.min_value !== undefined && (
+                      {(variable.min_value !== undefined || variable.valor_minimo !== undefined) && (
                         <View>
                           <Text className="text-xs text-gray-500">Mínimo</Text>
-                          <Text className="text-sm font-bold text-gray-900">{variable.min_value}</Text>
+                          <Text className="text-sm font-bold text-gray-900">{variable.min_value ?? variable.valor_minimo}</Text>
                         </View>
                       )}
-                      {variable.target_value !== undefined && (
+                      {(variable.target_value !== undefined || variable.valor_objetivo !== undefined) && (
                         <View>
                           <Text className="text-xs text-gray-500">Objetivo</Text>
-                          <Text className="text-sm font-bold text-blue-600">{variable.target_value}</Text>
+                          <Text className="text-sm font-bold text-blue-600">{variable.target_value ?? variable.valor_objetivo}</Text>
                         </View>
                       )}
-                      {variable.max_value !== undefined && (
+                      {(variable.max_value !== undefined || variable.valor_maximo !== undefined) && (
                         <View>
                           <Text className="text-xs text-gray-500">Máximo</Text>
-                          <Text className="text-sm font-bold text-gray-900">{variable.max_value}</Text>
+                          <Text className="text-sm font-bold text-gray-900">{variable.max_value ?? variable.valor_maximo}</Text>
                         </View>
                       )}
                     </View>

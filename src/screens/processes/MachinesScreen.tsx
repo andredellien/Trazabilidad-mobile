@@ -37,13 +37,13 @@ export default function MachinesScreen({ navigation }: any) {
     <View className="flex-1 bg-gray-50">
       <FlatList
         data={machines}
-        keyExtractor={(item) => item.machine_id.toString()}
+        keyExtractor={(item) => item.maquina_id?.toString() || String(Math.random())}
         contentContainerStyle={{ padding: 16 }}
         renderItem={({ item }) => (
           <View className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
-            {item.image_url ? (
+            {item.imagen_url ? (
               <Image 
-                source={{ uri: item.image_url }} 
+                source={{ uri: item.imagen_url }} 
                 className="w-full h-40 bg-gray-200"
                 resizeMode="cover"
               />
@@ -56,19 +56,19 @@ export default function MachinesScreen({ navigation }: any) {
             <View className="p-4">
               <View className="flex-row justify-between items-start mb-2">
                 <View className="flex-1">
-                  <Text className="text-lg font-bold text-gray-900">{item.name}</Text>
-                  <Text className="text-xs text-blue-600 font-medium">{item.code}</Text>
+                  <Text className="text-lg font-bold text-gray-900">{item.nombre}</Text>
+                  <Text className="text-xs text-blue-600 font-medium">{item.codigo}</Text>
                 </View>
-                <View className={`px-2 py-1 rounded-full ${item.active ? 'bg-green-100' : 'bg-red-100'}`}>
-                  <Text className={`text-xs font-medium ${item.active ? 'text-green-700' : 'text-red-700'}`}>
-                    {item.active ? 'Activa' : 'Inactiva'}
+                <View className={`px-2 py-1 rounded-full ${item.activo ? 'bg-green-100' : 'bg-red-100'}`}>
+                  <Text className={`text-xs font-medium ${item.activo ? 'text-green-700' : 'text-red-700'}`}>
+                    {item.activo ? 'Activa' : 'Inactiva'}
                   </Text>
                 </View>
               </View>
               
-              {item.description && (
+              {item.descripcion && (
                 <Text className="text-gray-600 text-sm mt-1" numberOfLines={2}>
-                  {item.description}
+                  {item.descripcion}
                 </Text>
               )}
             </View>

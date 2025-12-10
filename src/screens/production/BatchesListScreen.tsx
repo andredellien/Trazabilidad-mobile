@@ -4,12 +4,21 @@ import { useQuery } from '@tanstack/react-query';
 import { productionApi } from '../../api/production.api';
 import { CustomIcon } from '../../components/common/CustomIcon';
 
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+
 export default function BatchesListScreen({ navigation }: any) {
 
   const { data: batches, isLoading, error, refetch } = useQuery({
     queryKey: ['batches'],
     queryFn: productionApi.getBatches,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const statusColors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
@@ -59,12 +68,18 @@ export default function BatchesListScreen({ navigation }: any) {
         renderItem={({ item }) => (
           <TouchableOpacity
             className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 p-4"
-            onPress={() => navigation.navigate('BatchDetail', { batchId: item.batch_id })}
+            onPress={() => {
+              if (item.status === 'completed' || item.status === 'failed') {
+                navigation.navigate('CertificationLog', { batchId: item.batch_id });
+              } else {
+                navigation.navigate('BatchDetail', { batchId: item.batch_id });
+              }
+            }}
           >
             <View className="flex-row justify-between items-start mb-3">
               <View className="flex-1">
-                <Text className="text-lg font-bold text-gray-900">{item.product_name}</Text>
-                <Text className="text-xs text-blue-600 font-medium">Lote #{item.batch_id}</Text>
+                <Text className="text-lg font-bold text-gray-900">{item.name || item.batch_code || `Lote #${item.batch_id}`}</Text>
+                <Text className="text-xs text-blue-600 font-medium">{item.batch_code || `LOTE-${item.batch_id}`}</Text>
               </View>
               <View className={`px-3 py-1 rounded-full ${statusColors[item.status]?.split(' ')[0] || 'bg-gray-100'}`}>
                 <Text className={`text-xs font-medium ${statusColors[item.status]?.split(' ')[1] || 'text-gray-800'}`}>

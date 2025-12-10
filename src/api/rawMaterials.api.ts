@@ -1,66 +1,74 @@
 import { apiClient } from './client';
 
+// RawMaterialBase interface matching Spanish database schema (table: materia_prima_base)
 export interface RawMaterialBase {
   material_id: number;
-  category_id: number;
-  unit_id: number;
-  code: string;
-  name: string;
-  description?: string;
-  available_quantity: number;
-  minimum_stock: number;
-  maximum_stock?: number;
-  image_url?: string;
-  active: boolean;
+  categoria_id: number;
+  unidad_id: number;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  cantidad_disponible: number;
+  stock_minimo: number;
+  stock_maximo?: number;
+  imagen_url?: string;
+  activo: boolean;
   category?: {
-    category_id: number;
-    name: string;
+    categoria_id: number;
+    nombre: string;
   };
   unit?: {
-    unit_id: number;
-    code: string;
-    name: string;
-    abbreviation?: string;
+    unidad_id: number;
+    codigo: string;
+    nombre: string;
   };
 }
 
+// RawMaterial interface matching Spanish database schema (table: materia_prima)
 export interface RawMaterial {
-  raw_material_id: number;
+  materia_prima_id: number;
   material_id: number;
-  supplier_id: number;
-  supplier_batch?: string;
-  invoice_number?: string;
-  receipt_date: string;
-  expiration_date?: string;
-  quantity: number;
-  available_quantity: number;
-  receipt_conformity?: boolean;
-  observations?: string;
-  material_base?: RawMaterialBase;
+  proveedor_id: number;
+  lote_proveedor?: string;
+  numero_factura?: string;
+  fecha_recepcion: string;
+  fecha_vencimiento?: string;
+  cantidad: number;
+  cantidad_disponible: number;
+  conformidad_recepcion?: boolean;
+  observaciones?: string;
+  materialBase?: RawMaterialBase;
   supplier?: {
-    supplier_id: number;
-    business_name: string;
-    trading_name?: string;
+    proveedor_id: number;
+    razon_social: string;
+    nombre_comercial?: string;
   };
 }
 
+// RawMaterialCategory interface matching Spanish database schema (table: categoria_materia_prima)
 export interface RawMaterialCategory {
-  category_id: number;
-  code: string;
-  name: string;
-  description?: string;
-  active: boolean;
+  categoria_id: number;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  activo: boolean;
 }
 
 export const rawMaterialsApi = {
   // Raw Material Bases
   getRawMaterialBases: async () => {
-    const response = await apiClient.get('/raw-material-bases');
-    console.log('getRawMaterialBases response:', response.data);
-    // Handle paginated response
-    const data = (response.data as any).data || response.data;
-    console.log('Material bases extracted:', data);
-    return data;
+    try {
+      const response = await apiClient.get('/raw-material-bases');
+      console.log('getRawMaterialBases response:', response.data);
+      const data = (response.data as any).data || response.data;
+      return data;
+    } catch (error: any) {
+      console.log('getRawMaterialBases error:', error.response?.status, error.response?.data);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   getRawMaterialBase: async (id: number) => {
@@ -90,14 +98,11 @@ export const rawMaterialsApi = {
       const response = await apiClient.get('/raw-materials');
       console.log('Raw materials API response:', response.data);
       
-      // Handle paginated response - extract data array
       const materials = response.data.data || response.data;
       console.log('Raw materials received:', materials?.length || 0);
-      console.log('Materials data:', materials);
       return materials || [];
     } catch (error: any) {
       console.log('getRawMaterials error:', error.response?.status, error.response?.data || error.message);
-      // Return empty array if no data found
       if (error.response?.status === 404 || error.response?.status === 500) {
         return [];
       }
@@ -127,8 +132,16 @@ export const rawMaterialsApi = {
 
   // Raw Material Categories
   getRawMaterialCategories: async () => {
-    const response = await apiClient.get<RawMaterialCategory[]>('/raw-material-categories');
-    return response.data;
+    try {
+      const response = await apiClient.get('/raw-material-categories');
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.log('getRawMaterialCategories error:', error.response?.status);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   getRawMaterialCategory: async (id: number) => {

@@ -1,19 +1,26 @@
 import { apiClient } from './client';
 
+// StandardVariable interface matching Spanish database schema (table: variable_estandar)
+// Includes both Spanish field names and English aliases
 export interface StandardVariable {
   variable_id: number;
-  code: string;
-  name: string;
+  codigo: string;
+  code?: string;
+  nombre: string;
+  name?: string;
+  unidad?: string;
   unit?: string;
+  descripcion?: string;
   description?: string;
-  active: boolean;
+  activo: boolean;
+  active?: boolean;
 }
 
 export interface CreateStandardVariableData {
-  name: string;
-  unit?: string;
-  description?: string;
-  active?: boolean;
+  nombre: string;
+  unidad?: string;
+  descripcion?: string;
+  activo?: boolean;
 }
 
 export const standardVariablesApi = {
@@ -24,6 +31,9 @@ export const standardVariablesApi = {
       return data;
     } catch (error: any) {
       console.error('getStandardVariables error:', error);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
       throw error;
     }
   },

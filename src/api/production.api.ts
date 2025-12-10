@@ -1,51 +1,58 @@
 import { apiClient } from './client';
 
+// ProductionBatch interface matching Spanish database schema (table: lote_produccion)
 export interface ProductionBatch {
-  batch_id: number;
-  order_id: number;
-  batch_code: string;
-  name: string;
-  creation_date: string;
-  start_time?: string;
-  end_time?: string;
-  target_quantity?: number;
-  produced_quantity?: number;
-  observations?: string;
-  customer_order?: {
-    order_id: number;
-    order_number: string;
-    description?: string;
+  lote_id: number;
+  pedido_id: number;
+  codigo_lote: string;
+  nombre: string;
+  fecha_creacion: string;
+  hora_inicio?: string;
+  hora_fin?: string;
+  cantidad_objetivo?: number;
+  cantidad_producida?: number;
+  observaciones?: string;
+  order?: {
+    pedido_id: number;
+    numero_pedido: string;
+    descripcion?: string;
     customer?: {
-      customer_id: number;
-      business_name: string;
-      trading_name?: string;
+      cliente_id: number;
+      razon_social: string;
+      nombre_comercial?: string;
     };
+  };
+  final_evaluation?: {
+    evaluacion_id: number;
+    reason: string;
+    fecha_evaluacion?: string;
   };
 }
 
+// BatchRawMaterial interface matching Spanish database schema (table: lote_materia_prima)
 export interface BatchRawMaterial {
-  batch_material_id: number;
-  batch_id: number;
-  raw_material_id: number;
-  planned_quantity: number;
-  used_quantity?: number;
+  lote_material_id: number;
+  lote_id: number;
+  materia_prima_id: number;
+  cantidad_planificada: number;
+  cantidad_usada?: number;
   raw_material?: {
-    raw_material_id: number;
-    supplier_batch?: string;
-    base?: {
-      name: string;
+    materia_prima_id: number;
+    lote_proveedor?: string;
+    materialBase?: {
+      nombre: string;
     };
   };
 }
 
 export interface ProcessTransformation {
-  production_batch_id: number;
-  process_machine_id: number;
-  operator_id: number;
-  start_time: string;
-  end_time?: string;
+  lote_id: number;
+  proceso_maquina_id: number;
+  operador_id: number;
+  hora_inicio: string;
+  hora_fin?: string;
   variables: Record<string, any>;
-  notes?: string;
+  notas?: string;
 }
 
 export const productionApi = {
@@ -55,15 +62,11 @@ export const productionApi = {
       console.log('Calling API:', apiClient.defaults.baseURL + '/production-batches');
       const response = await apiClient.get('/production-batches');
       console.log('API Response status:', response.status);
-      console.log('API Response data:', response.data);
-      
-      // Handle paginated response - extract data array
       const batches = response.data.data || response.data;
-      console.log('Extracted batches:', batches);
+      console.log('Extracted batches:', batches?.length || 0);
       return batches;
     } catch (error: any) {
       console.log('Production batches API error:', error.response?.status, error.response?.data);
-      // Return empty array if no data found
       if (error.response?.status === 404 || error.response?.status === 500) {
         return [];
       }
@@ -144,23 +147,39 @@ export const productionApi = {
     return response.data;
   },
 
-  // Legacy compatibility (keeping the old interface)
+  // Legacy compatibility methods (map Spanish to English for existing UI components)
   getBatches: async () => {
     try {
       console.log('Fetching production batches...');
       const batches = await productionApi.getProductionBatches();
-      console.log('Batches received:', batches?.length || 0);
       
-      // Transform to old interface for backward compatibility
-      return batches.map((batch: any) => ({
-        batch_id: batch.batch_id,
-        product_name: batch.order?.description || batch.name || 'Unknown Product',
-        status: 'in_progress', // Default status since we don't have status mapping yet
-        start_date: batch.start_time || batch.creation_date,
-        end_date: batch.end_time,
-        quantity: parseFloat(String(batch.target_quantity || 0)),
-        operator_name: 'Production Team', // Default since we don't have operator relation yet
-      }));
+      return batches.map((batch: any) => {
+        // The API now returns English field names from ProductionBatchResource
+        // batch_id, name, batch_code, status, product_name, etc.
+        
+        // Determine status - use API-provided status or fallback to evaluation check
+        let status = batch.status || 'pending';
+        if (!batch.status && (batch.final_evaluation || batch.finalEvaluation)) {
+          const evaluation = batch.final_evaluation || batch.finalEvaluation;
+          const reason = evaluation.reason || evaluation.razon || '';
+          status = reason.toLowerCase().includes('falló') || reason.toLowerCase().includes('fallo') 
+            ? 'not_certified' 
+            : 'certified';
+        }
+        
+        // Map both English (from resource) and Spanish (fallback) field names
+        return {
+          batch_id: batch.batch_id || batch.lote_id,
+          name: batch.name || batch.nombre,
+          batch_code: batch.batch_code || batch.codigo_lote,
+          product_name: batch.product_name || batch.order?.description || batch.order?.descripcion || batch.name || batch.nombre || 'Unknown Product',
+          status: status,
+          start_date: batch.start_date || batch.creation_date || batch.hora_inicio || batch.fecha_creacion,
+          end_date: batch.end_time || batch.hora_fin,
+          quantity: parseFloat(String(batch.quantity || batch.target_quantity || batch.cantidad_objetivo || 0)),
+          operator_name: batch.operator_name || 'Production Team',
+        };
+      });
     } catch (error: any) {
       console.log('getBatches error:', error.response?.status, error.response?.data || error.message);
       throw error;
@@ -170,18 +189,32 @@ export const productionApi = {
   getBatch: async (id: number) => {
     try {
       console.log('Fetching batch with id:', id);
-      const batch = await productionApi.getProductionBatch(id);
+      const batch: any = await productionApi.getProductionBatch(id);
       console.log('Batch data received:', batch);
       
-      // Transform to old interface for backward compatibility
+      // Determine status - use API-provided status or fallback to evaluation check
+      let status = batch.status || 'pending';
+      if (!batch.status && (batch.final_evaluation || batch.finalEvaluation)) {
+        const evaluation = batch.final_evaluation || batch.finalEvaluation;
+        const reason = evaluation.reason || evaluation.razon || '';
+        status = reason.toLowerCase().includes('falló') || reason.toLowerCase().includes('fallo') 
+          ? 'not_certified' 
+          : 'certified';
+      }
+      
+      // Map both English (from resource) and Spanish (fallback) field names
       return {
-        batch_id: batch.batch_id,
-        product_name: batch.customer_order?.description || batch.name || 'Unknown Product',
-        status: 'in_progress', // Default status
-        start_date: batch.start_time || batch.creation_date,
-        end_date: batch.end_time,
-        quantity: parseFloat(String(batch.target_quantity || 0)),
-        operator_name: 'Production Team', // Default since we don't have operator relation yet
+        batch_id: batch.batch_id || batch.lote_id,
+        name: batch.name || batch.nombre,
+        batch_code: batch.batch_code || batch.codigo_lote,
+        product_name: batch.product_name || batch.order?.description || batch.order?.descripcion || batch.name || batch.nombre || 'Unknown Product',
+        status: status,
+        start_date: batch.start_date || batch.creation_date || batch.hora_inicio || batch.fecha_creacion,
+        end_date: batch.end_time || batch.hora_fin,
+        quantity: parseFloat(String(batch.quantity || batch.target_quantity || batch.cantidad_objetivo || 0)),
+        operator_name: batch.operator_name || 'Production Team',
+        final_evaluation: batch.final_evaluation || batch.finalEvaluation || null,
+        order: batch.order || null,
       };
     } catch (error: any) {
       console.log('getBatch error:', error.response?.status, error.response?.data || error.message);
@@ -191,7 +224,15 @@ export const productionApi = {
 
   createBatch: async (data: any) => {
     console.log('createBatch called with:', data);
-    const response = await apiClient.post('/production-batches', data);
+    // Map to Spanish field names if needed
+    const payload = {
+      pedido_id: data.order_id || data.pedido_id,
+      nombre: data.name || data.nombre,
+      cantidad_objetivo: data.target_quantity || data.cantidad_objetivo,
+      observaciones: data.observations || data.observaciones,
+      raw_materials: data.raw_materials,
+    };
+    const response = await apiClient.post('/production-batches', payload);
     return response.data;
   },
 

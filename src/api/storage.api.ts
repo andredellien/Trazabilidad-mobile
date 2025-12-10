@@ -1,119 +1,96 @@
 import { apiClient } from './client';
 
+// Storage interface matching Spanish database schema (table: almacenaje)
 export interface Storage {
-  storage_id: number;
-  production_batch_id: number;
-  location: string;
-  storage_date: string;
-  quantity: number;
-  unit_of_measure_id: number;
-  status_id: number;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-  production_batch?: {
-    production_batch_id: number;
-    customer_order?: {
-      product_name: string;
-      customer?: {
-        name: string;
-      };
-    };
-  };
-  unit_of_measure?: {
-    unit_of_measure_id: number;
-    name: string;
-    abbreviation: string;
-  };
-  status?: {
-    status_id: number;
-    name: string;
+  almacenaje_id: number;
+  lote_id: number;
+  ubicacion: string;
+  condicion?: string;
+  cantidad: number;
+  observaciones?: string;
+  latitud_recojo?: number;
+  longitud_recojo?: number;
+  direccion_recojo?: string;
+  referencia_recojo?: string;
+  fecha_almacenaje?: string;
+  fecha_retiro?: string;
+  batch?: {
+    lote_id: number;
+    codigo_lote: string;
+    nombre: string;
   };
 }
 
+// MaterialMovementLog interface matching Spanish database schema (table: log_movimiento_material)
 export interface MaterialMovementLog {
-  material_movement_log_id: number;
-  raw_material_id: number;
-  movement_type_id: number;
-  quantity: number;
-  movement_date: string;
-  operator_id: number;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
+  log_movimiento_id: number;
+  material_id: number;
+  tipo_movimiento_id: number;
+  cantidad: number;
+  fecha_movimiento: string;
+  operador_id: number;
+  observaciones?: string;
   raw_material?: {
-    raw_material_id: number;
-    lot_number: string;
-    base?: {
-      name: string;
-    };
-    supplier?: {
-      name: string;
-    };
+    material_id: number;
+    nombre: string;
   };
   movement_type?: {
-    movement_type_id: number;
-    name: string;
-    description?: string;
+    tipo_movimiento_id: number;
+    nombre: string;
+    descripcion?: string;
   };
   operator?: {
-    operator_id: number;
-    first_name: string;
-    last_name: string;
-    username: string;
+    operador_id: number;
+    nombre: string;
+    apellido: string;
+    usuario: string;
   };
 }
 
+// MaterialRequest interface matching Spanish database schema
 export interface MaterialRequest {
-  material_request_id: number;
-  operator_id: number;
-  raw_material_base_id: number;
-  quantity_requested: number;
-  unit_of_measure_id: number;
-  status_id: number;
-  request_date: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
+  solicitud_id: number;
+  operador_id: number;
+  material_id: number;
+  cantidad_solicitada: number;
+  unidad_id: number;
+  estado: string;
+  fecha_solicitud: string;
+  observaciones?: string;
   operator?: {
-    operator_id: number;
-    first_name: string;
-    last_name: string;
-    username: string;
+    operador_id: number;
+    nombre: string;
+    apellido: string;
+    usuario: string;
   };
-  raw_material_base?: {
-    raw_material_base_id: number;
-    name: string;
-    category?: {
-      name: string;
+  material?: {
+    material_id: number;
+    nombre: string;
+    categoria?: {
+      nombre: string;
     };
   };
-  unit_of_measure?: {
-    unit_of_measure_id: number;
-    name: string;
-    abbreviation: string;
-  };
-  status?: {
-    status_id: number;
-    name: string;
+  unit?: {
+    unidad_id: number;
+    nombre: string;
+    codigo: string;
   };
 }
 
+// MaterialRequestDetail interface
 export interface MaterialRequestDetail {
-  material_request_detail_id: number;
-  material_request_id: number;
-  raw_material_id?: number;
-  quantity_provided: number;
-  provided_date?: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
+  detalle_id: number;
+  solicitud_id: number;
+  materia_prima_id?: number;
+  cantidad_entregada: number;
+  fecha_entrega?: string;
+  observaciones?: string;
   material_request?: MaterialRequest;
   raw_material?: {
-    raw_material_id: number;
-    lot_number: string;
-    base?: {
-      name: string;
+    materia_prima_id: number;
+    lote_proveedor: string;
+    materialBase?: {
+      nombre: string;
     };
   };
 }
@@ -121,8 +98,16 @@ export interface MaterialRequestDetail {
 export const storageApi = {
   // Storage
   getStorages: async () => {
-    const response = await apiClient.get<Storage[]>('/storages');
-    return response.data;
+    try {
+      const response = await apiClient.get('/storages');
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.log('getStorages error:', error.response?.status, error.response?.data);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   getStorage: async (id: number) => {
@@ -152,8 +137,16 @@ export const storageApi = {
 
   // Material Movement Logs
   getMaterialMovementLogs: async () => {
-    const response = await apiClient.get<MaterialMovementLog[]>('/material-movement-logs');
-    return response.data;
+    try {
+      const response = await apiClient.get('/material-movement-logs');
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.log('getMaterialMovementLogs error:', error.response?.status);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   getMaterialMovementLog: async (id: number) => {
@@ -183,8 +176,16 @@ export const storageApi = {
 
   // Material Requests
   getMaterialRequests: async () => {
-    const response = await apiClient.get<MaterialRequest[]>('/material-requests');
-    return response.data;
+    try {
+      const response = await apiClient.get('/material-requests');
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.log('getMaterialRequests error:', error.response?.status);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   getMaterialRequest: async (id: number) => {
@@ -209,8 +210,16 @@ export const storageApi = {
 
   // Material Request Details
   getMaterialRequestDetails: async () => {
-    const response = await apiClient.get<MaterialRequestDetail[]>('/material-request-details');
-    return response.data;
+    try {
+      const response = await apiClient.get('/material-request-details');
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.log('getMaterialRequestDetails error:', error.response?.status);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   getMaterialRequestDetail: async (id: number) => {

@@ -6,13 +6,14 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  first_name: string;
-  last_name: string;
-  username: string;
+  nombre: string;
+  apellido: string;
+  usuario: string;
   email: string;
   password: string;
 }
 
+// Response matches API controller output structure
 export interface AuthResponse {
   token: string;
   operator: {
@@ -21,11 +22,21 @@ export interface AuthResponse {
     last_name: string;
     username: string;
     email: string;
-    role: {
-      role_id: string;
-      name: string;
+    role?: {
+      role_id?: string;
+      name?: string;
     };
   };
+}
+
+// Spanish field names for the operator model
+export interface Operador {
+  operador_id: number;
+  nombre: string;
+  apellido: string;
+  usuario: string;
+  email?: string;
+  activo: boolean;
 }
 
 export const authApi = {
@@ -42,7 +53,15 @@ export const authApi = {
   },
 
   register: async (data: RegisterRequest) => {
-    const response = await apiClient.post('/auth/register', data);
+    // Map to expected backend fields
+    const payload = {
+      first_name: data.nombre,
+      last_name: data.apellido,
+      username: data.usuario,
+      email: data.email,
+      password: data.password,
+    };
+    const response = await apiClient.post('/auth/register', payload);
     return response.data;
   },
 

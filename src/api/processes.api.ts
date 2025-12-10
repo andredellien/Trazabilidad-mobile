@@ -1,55 +1,88 @@
 import { apiClient } from './client';
 
+// Machine interface (re-exported from machines.api.ts)
 export interface Machine {
-  machine_id: number;
-  code: string;
-  name: string;
-  description?: string;
-  image_url?: string;
-  active: boolean;
+  maquina_id: number;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  imagen_url?: string;
+  activo: boolean;
 }
 
+// ProcessMachineVariable interface matching Spanish database schema
 export interface ProcessMachineVariable {
   variable_id?: number;
-  standard_variable_id: number;
+  proceso_maquina_id?: number;
+  variable_estandar_id?: number;
+  // English aliases for frontend use
+  standard_variable_id?: number;
+  valor_minimo?: number;
+  valor_maximo?: number;
+  valor_objetivo?: number;
+  // English aliases
   min_value?: number;
   max_value?: number;
   target_value?: number;
-  mandatory: boolean;
+  obligatorio?: boolean;
+  mandatory?: boolean;
   standardVariable?: {
     variable_id: number;
-    code: string;
-    name: string;
+    codigo: string;
+    nombre: string;
+    // English aliases
+    code?: string;
+    name?: string;
+    unidad?: string;
     unit?: string;
   };
 }
 
+// ProcessMachine interface with both Spanish and English field names
 export interface ProcessMachine {
+  proceso_maquina_id?: number;
   process_machine_id?: number;
+  proceso_id?: number;
   process_id?: number;
-  machine_id: number;
-  step_order: number;
-  name: string;
+  maquina_id?: number;
+  machine_id?: number;
+  orden_paso?: number;
+  step_order?: number;
+  nombre?: string;
+  name?: string;
+  descripcion?: string;
   description?: string;
+  tiempo_estimado?: number;
   estimated_time?: number;
   machine?: Machine;
   variables?: ProcessMachineVariable[];
 }
 
+// Process interface matching Spanish database schema (table: proceso)
 export interface Process {
-  process_id: number;
-  code: string;
-  name: string;
+  proceso_id: number;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  activo: boolean;
+  // English aliases
+  process_id?: number;
+  code?: string;
+  name?: string;
   description?: string;
-  active: boolean;
+  active?: boolean;
+  processMachines?: ProcessMachine[];
   process_machines?: ProcessMachine[];
 }
 
 export interface CreateProcessData {
-  name: string;
+  nombre?: string;
+  name?: string;
+  descripcion?: string;
   description?: string;
+  activo?: boolean;
   active?: boolean;
-  process_machines?: Omit<ProcessMachine, 'process_machine_id' | 'process_id' | 'machine'>[];
+  process_machines?: Omit<ProcessMachine, 'proceso_maquina_id' | 'proceso_id' | 'machine'>[];
 }
 
 export const processesApi = {
@@ -61,6 +94,9 @@ export const processesApi = {
       return data;
     } catch (error: any) {
       console.error('getProcesses error:', error);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
       throw error;
     }
   },

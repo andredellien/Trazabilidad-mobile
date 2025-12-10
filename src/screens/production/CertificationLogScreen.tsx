@@ -29,7 +29,7 @@ export default function CertificationLogScreen({ route }: any) {
     );
   }
 
-  const isCertified = log.final_result.status === 'Certificado';
+  const isCertified = log.final_result.estado === 'Certificado';
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -44,7 +44,7 @@ export default function CertificationLogScreen({ route }: any) {
                 color={isCertified ? '#10B981' : '#EF4444'} 
               />
             </View>
-            <Text className="text-white text-3xl font-bold mb-2">{log.final_result.status}</Text>
+            <Text className="text-white text-3xl font-bold mb-2">{log.final_result.estado}</Text>
             <Text className="text-white/90 text-center">Lote #{batchId}</Text>
           </View>
         </View>
@@ -55,7 +55,7 @@ export default function CertificationLogScreen({ route }: any) {
           
           <View className="mb-3">
             <Text className="text-sm text-gray-600">Motivo</Text>
-            <Text className="text-base font-semibold text-gray-900 mt-1">{log.final_result.reason}</Text>
+            <Text className="text-base font-semibold text-gray-900 mt-1">{log.final_result.razon}</Text>
           </View>
 
           <View className="mb-3">
@@ -66,7 +66,7 @@ export default function CertificationLogScreen({ route }: any) {
           <View>
             <Text className="text-sm text-gray-600">Fecha de Evaluación</Text>
             <Text className="text-base font-semibold text-gray-900 mt-1">
-              {new Date(log.final_result.evaluation_date).toLocaleString()}
+              {new Date(log.final_result.fecha_evaluacion).toLocaleString()}
             </Text>
           </View>
         </View>
@@ -79,37 +79,37 @@ export default function CertificationLogScreen({ route }: any) {
             <View key={index} className="mb-4">
               <View className="flex-row items-start mb-2">
                 <View className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${
-                  machine.meets_standard ? 'bg-green-600' : 'bg-red-600'
+                  machine.cumple_estandar ? 'bg-green-600' : 'bg-red-600'
                 }`}>
-                  <Text className="text-white font-bold text-sm">{machine.step_number}</Text>
+                  <Text className="text-white font-bold text-sm">{machine.orden_paso}</Text>
                 </View>
                 
                 <View className="flex-1">
-                  <Text className="text-base font-bold text-gray-900">{machine.machine_name}</Text>
+                  <Text className="text-base font-bold text-gray-900">{machine.nombre_maquina}</Text>
                   <Text className="text-sm text-gray-600">
-                    {new Date(machine.record_date).toLocaleString()}
+                    {new Date(machine.fecha_registro).toLocaleString()}
                   </Text>
                 </View>
 
                 <View className={`px-3 py-1 rounded-full ${
-                  machine.meets_standard ? 'bg-green-100' : 'bg-red-100'
+                  machine.cumple_estandar ? 'bg-green-100' : 'bg-red-100'
                 }`}>
                   <Text className={`text-xs font-semibold ${
-                    machine.meets_standard ? 'text-green-700' : 'text-red-700'
+                    machine.cumple_estandar ? 'text-green-700' : 'text-red-700'
                   }`}>
-                    {machine.meets_standard ? 'APROBADO' : 'RECHAZADO'}
+                    {machine.cumple_estandar ? 'APROBADO' : 'RECHAZADO'}
                   </Text>
                 </View>
               </View>
 
               {/* Variables */}
-              {Object.keys(machine.entered_variables).length > 0 && (
+              {Object.keys(machine.variables_registradas).length > 0 && (
                 <View className="bg-gray-50 rounded-lg p-3 ml-11">
                   <Text className="text-xs font-semibold text-gray-700 mb-2">Variables Registradas:</Text>
-                  {Object.entries(machine.entered_variables).map(([key, value]) => (
+                  {Object.entries(machine.variables_registradas).map(([key, value]) => (
                     <View key={key} className="flex-row justify-between mb-1">
                       <Text className="text-xs text-gray-600">{key}:</Text>
-                      <Text className="text-xs font-semibold text-gray-900">{value}</Text>
+                      <Text className="text-xs font-semibold text-gray-900">{String(value)}</Text>
                     </View>
                   ))}
                 </View>

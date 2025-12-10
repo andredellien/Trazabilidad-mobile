@@ -137,8 +137,8 @@ export default function ProcessTransformationScreen({ route, navigation }: any) 
                 selectedValue={selectedProcessId}
                 onValueChange={(value) => setSelectedProcessId(value)}
                 items={(processes as any[])?.map((process: any) => ({
-                  label: `${process.name} (${process.code})`,
-                  value: process.process_id,
+                  label: `${process.name || process.nombre} (${process.code || process.codigo})`,
+                  value: process.process_id || process.proceso_id,
                 })) || []}
                 placeholder="Seleccionar proceso..."
               />
@@ -185,12 +185,14 @@ export default function ProcessTransformationScreen({ route, navigation }: any) 
         {/* Process Steps */}
         <View className="p-4">
           {processMachines.map((machine, index) => {
-            const isCompleted = completedRecords.includes(machine.process_machine_id);
-            const isPrevCompleted = index === 0 || completedRecords.includes(processMachines[index - 1].process_machine_id);
+            const machineId = machine.process_machine_id ?? machine.proceso_maquina_id ?? 0;
+            const isCompleted = completedRecords.includes(machineId);
+            const prevMachineId = index === 0 ? 0 : (processMachines[index - 1].process_machine_id ?? processMachines[index - 1].proceso_maquina_id ?? 0);
+            const isPrevCompleted = index === 0 || completedRecords.includes(prevMachineId);
             const isAccessible = isPrevCompleted;
 
             return (
-              <View key={machine.process_machine_id} className="mb-4">
+              <View key={machineId} className="mb-4">
                 {/* Connector Line */}
                 {index > 0 && (
                   <View className="ml-6 h-4 w-0.5 bg-gray-300 -mb-2" />
@@ -217,8 +219,8 @@ export default function ProcessTransformationScreen({ route, navigation }: any) 
 
                     {/* Step Info */}
                     <View className="flex-1">
-                      <Text className="text-base font-bold text-gray-900">{machine.name}</Text>
-                      <Text className="text-sm text-gray-600">{machine.machine?.name}</Text>
+                      <Text className="text-base font-bold text-gray-900">{machine.name || machine.nombre}</Text>
+                      <Text className="text-sm text-gray-600">{machine.machine?.name || machine.machine?.nombre}</Text>
                       {machine.variables && machine.variables.length > 0 && (
                         <Text className="text-xs text-gray-500 mt-1">
                           {machine.variables.length} variable{machine.variables.length > 1 ? 's' : ''}

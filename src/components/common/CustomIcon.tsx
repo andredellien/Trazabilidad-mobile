@@ -51,6 +51,18 @@ export const CustomIcon = ({ name, size, color, style }: CustomIconProps) => {
         return <Ionicons name="close" size={size} color={color} style={style} />;
       case 'checkmark':
         return <Ionicons name="checkmark" size={size} color={color} style={style} />;
+      case 'calculator':
+        return <Ionicons name="calculator" size={size} color={color} style={style} />;
+      case 'cash':
+        return <Ionicons name="cash" size={size} color={color} style={style} />;
+      case 'pricetag':
+        return <Ionicons name="pricetag" size={size} color={color} style={style} />;
+      case 'calendar':
+        return <Ionicons name="calendar" size={size} color={color} style={style} />;
+      case 'plus':
+        return <Ionicons name="add" size={size} color={color} style={style} />;
+      case 'trash-2':
+        return <Ionicons name="trash-outline" size={size} color={color} style={style} />;
       default:
         return <Ionicons name="help-circle" size={size} color={color} style={style} />;
     }

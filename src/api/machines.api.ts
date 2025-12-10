@@ -1,23 +1,33 @@
 import { apiClient } from './client';
 
+// Machine interface matching Spanish database schema (table: maquina)
+// Includes both Spanish field names and English aliases
 export interface Machine {
-  machine_id: number;
-  code: string;
-  name: string;
+  maquina_id: number;
+  machine_id?: number;
+  codigo: string;
+  code?: string;
+  nombre: string;
+  name?: string;
+  descripcion?: string;
   description?: string;
+  imagen_url?: string;
   image_url?: string;
-  active: boolean;
+  activo: boolean;
+  active?: boolean;
 }
 
 export const machinesApi = {
   getMachines: async () => {
     try {
       const response = await apiClient.get('/machines');
-      // Handle paginated response
       const data = response.data.data || response.data;
       return data;
     } catch (error: any) {
       console.error('getMachines error:', error);
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        return [];
+      }
       throw error;
     }
   },

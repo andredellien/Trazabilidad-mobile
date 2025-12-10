@@ -55,7 +55,7 @@ export default function FinalizeCertificationScreen({ route, navigation }: any) 
     );
   };
 
-  const allCompleted = machines.every((m) => completedRecords.includes(m.process_machine_id));
+  const allCompleted = machines.every((m) => completedRecords.includes(m.process_machine_id ?? m.proceso_maquina_id ?? 0));
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -111,10 +111,11 @@ export default function FinalizeCertificationScreen({ route, navigation }: any) 
           <Text className="text-lg font-bold text-gray-900 mb-4">Pasos del Proceso</Text>
           
           {machines.map((machine, index) => {
-            const isCompleted = completedRecords.includes(machine.process_machine_id);
+            const machineId = machine.process_machine_id ?? machine.proceso_maquina_id ?? 0;
+            const isCompleted = completedRecords.includes(machineId);
             
             return (
-              <View key={machine.process_machine_id} className="mb-3">
+              <View key={machineId} className="mb-3">
                 <View className="flex-row items-center">
                   <View className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${
                     isCompleted ? 'bg-green-600' : 'bg-gray-300'
@@ -122,13 +123,13 @@ export default function FinalizeCertificationScreen({ route, navigation }: any) 
                     {isCompleted ? (
                       <CustomIcon name="checkmark" size={16} color="white" />
                     ) : (
-                      <Text className="text-white font-bold text-sm">{machine.step_order}</Text>
+                      <Text className="text-white font-bold text-sm">{machine.step_order ?? machine.orden_paso}</Text>
                     )}
                   </View>
                   
                   <View className="flex-1">
-                    <Text className="text-base font-semibold text-gray-900">{machine.name}</Text>
-                    <Text className="text-sm text-gray-600">{machine.machine?.name}</Text>
+                    <Text className="text-base font-semibold text-gray-900">{machine.name ?? machine.nombre}</Text>
+                    <Text className="text-sm text-gray-600">{machine.machine?.name ?? machine.machine?.nombre}</Text>
                   </View>
 
                   {isCompleted ? (

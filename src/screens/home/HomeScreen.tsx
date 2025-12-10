@@ -168,66 +168,45 @@ export default function HomeScreen({ navigation }: any) {
         <View className="px-4 mt-6">
           <Text className="text-lg font-bold text-gray-900 mb-4">Actividad de Producción Reciente</Text>
           <View className="bg-white rounded-lg shadow-sm">
-            {batches?.slice(0, 3).map((batch, index) => (
-              <TouchableOpacity 
-                key={batch.batch_id}
-                className={`p-4 ${index < 2 ? 'border-b border-gray-100' : ''}`}
-                onPress={() => navigation.navigate('Production', { screen: 'BatchDetail', params: { batchId: batch.batch_id } })}
-              >
-                <View className="flex-row justify-between items-center">
-                  <View className="flex-1">
-                    <Text className="font-medium text-gray-900">{batch.product_name}</Text>
-                    <Text className="text-gray-500 text-sm">Lote #{batch.batch_id}</Text>
-                  </View>
-                  <View className="items-end">
-                    <View className={`px-2 py-1 rounded-full ${
-                      batch.status === 'completed' ? 'bg-green-100' : 
-                      batch.status === 'in_progress' ? 'bg-blue-100' : 'bg-yellow-100'
-                    }`}>
-                      <Text className={`text-xs font-medium ${
-                        batch.status === 'completed' ? 'text-green-800' : 
-                        batch.status === 'in_progress' ? 'text-blue-800' : 'text-yellow-800'
-                      }`}>
-                        {batch.status === 'completed' ? 'COMPLETADO' : batch.status === 'in_progress' ? 'EN PROGRESO' : batch.status === 'pending' ? 'PENDIENTE' : 'FALLIDO'}
-                      </Text>
+            {batches?.slice(0, 3).map((batch, index) => {
+              // Status colors and labels mapping
+              const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
+                pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'PENDIENTE' },
+                in_progress: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'EN PROGRESO' },
+                completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'COMPLETADO' },
+                certified: { bg: 'bg-green-100', text: 'text-green-800', label: 'CERTIFICADO' },
+                not_certified: { bg: 'bg-red-100', text: 'text-red-800', label: 'NO CERTIFICADO' },
+                failed: { bg: 'bg-red-100', text: 'text-red-800', label: 'FALLIDO' },
+              };
+              const config = statusConfig[batch.status] || statusConfig.in_progress;
+              
+              return (
+                <TouchableOpacity 
+                  key={batch.batch_id}
+                  className={`p-4 ${index < 2 ? 'border-b border-gray-100' : ''}`}
+                  onPress={() => navigation.navigate('Production', { screen: 'BatchDetail', params: { batchId: batch.batch_id } })}
+                >
+                  <View className="flex-row justify-between items-center">
+                    <View className="flex-1">
+                      <Text className="font-medium text-gray-900">{batch.product_name}</Text>
+                      <Text className="text-gray-500 text-sm">Lote #{batch.batch_id}</Text>
                     </View>
-                    <Text className="text-gray-500 text-xs mt-1">{batch.quantity} unidades</Text>
+                    <View className="items-end">
+                      <View className={`px-2 py-1 rounded-full ${config.bg}`}>
+                        <Text className={`text-xs font-medium ${config.text}`}>
+                          {config.label}
+                        </Text>
+                      </View>
+                      <Text className="text-gray-500 text-xs mt-1">{batch.quantity} unidades</Text>
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
-        {/* System Status */}
-        <View className="px-4 mt-6 mb-6">
-          <Text className="text-lg font-bold text-gray-900 mb-4">Estado del Sistema</Text>
-          <View className="bg-white rounded-lg p-4 shadow-sm">
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-gray-700">Eficiencia de Producción</Text>
-              <Text className="text-green-600 font-bold">94%</Text>
-            </View>
-            <View className="bg-gray-200 rounded-full h-2 mb-3">
-              <View className="bg-green-500 h-2 rounded-full" style={{ width: '94%' }} />
-            </View>
-            
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-gray-700">Tasa de Calidad</Text>
-              <Text className="text-blue-600 font-bold">97%</Text>
-            </View>
-            <View className="bg-gray-200 rounded-full h-2 mb-3">
-              <View className="bg-blue-500 h-2 rounded-full" style={{ width: '97%' }} />
-            </View>
 
-            <View className="flex-row justify-between items-center">
-              <Text className="text-gray-700">Entrega Puntual</Text>
-              <Text className="text-purple-600 font-bold">89%</Text>
-            </View>
-            <View className="bg-gray-200 rounded-full h-2">
-              <View className="bg-purple-500 h-2 rounded-full" style={{ width: '89%' }} />
-            </View>
-          </View>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { processesApi } from '../../api/processes.api';
+import { processesApi, ProcessMachine } from '../../api/processes.api';
 import { CustomIcon } from '../../components/common/CustomIcon';
 
 type RouteParams = {
@@ -70,7 +70,7 @@ export default function ProcessDetailScreen() {
     );
   }
 
-  const processMachines = process.process_machines || [];
+  const processMachines = (process as any).process_machines || [];
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -79,20 +79,20 @@ export default function ProcessDetailScreen() {
         <View className="bg-white p-6 border-b border-gray-200">
           <View className="flex-row justify-between items-start mb-4">
             <View className="flex-1">
-              <Text className="text-2xl font-bold text-gray-900 mb-1">{process.name}</Text>
-              <Text className="text-sm text-blue-600 font-medium">{process.code}</Text>
+              <Text className="text-2xl font-bold text-gray-900 mb-1">{process.nombre}</Text>
+              <Text className="text-sm text-blue-600 font-medium">{process.codigo}</Text>
             </View>
-            <View className={`px-3 py-1 rounded-full ${process.active ? 'bg-green-100' : 'bg-red-100'}`}>
-              <Text className={`text-sm font-medium ${process.active ? 'text-green-700' : 'text-red-700'}`}>
-                {process.active ? 'Activo' : 'Inactivo'}
+            <View className={`px-3 py-1 rounded-full ${process.activo ? 'bg-green-100' : 'bg-red-100'}`}>
+              <Text className={`text-sm font-medium ${process.activo ? 'text-green-700' : 'text-red-700'}`}>
+                {process.activo ? 'Activo' : 'Inactivo'}
               </Text>
             </View>
           </View>
 
-          {process.description && (
+          {process.descripcion && (
             <View className="bg-gray-50 p-3 rounded-lg">
               <Text className="text-xs text-gray-500 mb-1">Descripción</Text>
-              <Text className="text-gray-700">{process.description}</Text>
+              <Text className="text-gray-700">{process.descripcion}</Text>
             </View>
           )}
         </View>
@@ -114,16 +114,16 @@ export default function ProcessDetailScreen() {
             </View>
           ) : (
             processMachines
-              .sort((a, b) => a.step_order - b.step_order)
-              .map((step, index) => (
+              .sort((a: any, b: any) => (a.step_order || 0) - (b.step_order || 0))
+              .map((step: any, index: number) => (
                 <View
-                  key={step.process_machine_id}
+                  key={step.process_machine_id || index}
                   className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3 overflow-hidden"
                 >
                   {/* Step Header */}
                   <View className="bg-blue-50 px-4 py-2 flex-row items-center">
                     <View className="bg-blue-600 w-8 h-8 rounded-full items-center justify-center mr-3">
-                      <Text className="text-white font-bold">{step.step_order}</Text>
+                      <Text className="text-white font-bold">{step.step_order || index + 1}</Text>
                     </View>
                     <Text className="text-blue-900 font-bold flex-1">{step.name}</Text>
                     {step.estimated_time && (

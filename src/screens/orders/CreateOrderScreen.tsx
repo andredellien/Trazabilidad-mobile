@@ -13,6 +13,7 @@ interface SelectedProduct {
   productName: string;
   quantity: number;
   unit: string;
+  precio_unitario: number;
 }
 
 interface Destination {
@@ -83,7 +84,7 @@ export default function CreateOrderScreen({ navigation }: any) {
     setProductCounter(newIndex);
     setSelectedProducts([
       ...selectedProducts,
-      { index: newIndex, productId: 0, productName: '', quantity: 0, unit: '' }
+      { index: newIndex, productId: 0, productName: '', quantity: 0, unit: '', precio_unitario: 0 }
     ]);
   };
 
@@ -106,10 +107,11 @@ export default function CreateOrderScreen({ navigation }: any) {
       if (p.index === index) {
         const updates: any = { [field]: value };
         if (field === 'productId') {
-          const product = products.find((prod: Product) => prod.product_id === value);
+          const product = products.find((prod: Product) => prod.producto_id === value);
           if (product) {
-            updates.productName = product.name;
-            updates.unit = product.unit?.abbreviation || 'Unid';
+            updates.productName = product.nombre;
+            updates.unit = product.unit?.codigo || 'Unid';
+            updates.precio_unitario = product.precio_unitario || 0;
           }
         }
         return { ...p, ...updates };
@@ -227,34 +229,33 @@ export default function CreateOrderScreen({ navigation }: any) {
       productIndexMap.set(p.index, idx);
     });
 
-    // Construct payload matching the web form structure
-    const payload = {
-      customer_id: 1, // Default customer for now
-      name: basicInfo.name,
-      description: basicInfo.description,
-      priority: basicInfo.priority,
-      delivery_date: basicInfo.delivery_date,
+    // Construct payload matching the web form structure - using Spanish field names
+    const payload: CreateOrderPayload = {
+      cliente_id: 1, // Default customer for now
+      nombre: basicInfo.name,
+      descripcion: basicInfo.description,
+      fecha_entrega: basicInfo.delivery_date,
       products: selectedProducts.map(p => ({
-        product_id: p.productId,
-        quantity: p.quantity,
-        observations: '' // Optional
+        producto_id: p.productId,
+        cantidad: p.quantity,
+        observaciones: '' // Optional
       })),
       destinations: destinations.map(d => ({
-        address: d.address,
-        reference: d.reference,
-        contact_name: d.contact_name,
-        contact_phone: d.contact_phone,
-        delivery_instructions: d.delivery_instructions,
-        latitude: null, // Map not implemented
-        longitude: null,
+        direccion: d.address,
+        referencia: d.reference,
+        nombre_contacto: d.contact_name,
+        telefono_contacto: d.contact_phone,
+        instrucciones_entrega: d.delivery_instructions,
+        latitud: null, // Map not implemented
+        longitud: null,
         products: Object.entries(d.assignments).map(([prodIndex, qty]) => {
           const arrayIndex = productIndexMap.get(parseInt(prodIndex));
           if (arrayIndex === undefined) return null;
           return {
             order_product_index: arrayIndex,
-            quantity: qty
+            cantidad: qty as number
           };
-        }).filter((item): item is { order_product_index: number; quantity: number } => item !== null && item.quantity > 0)
+        }).filter((item): item is { order_product_index: number; cantidad: number } => item !== null && item.cantidad > 0)
       }))
     };
 
@@ -369,12 +370,16 @@ export default function CreateOrderScreen({ navigation }: any) {
                   >
                     <Picker.Item label="Seleccione un producto" value={0} />
                     {products.map((p: Product) => (
-                      <Picker.Item key={p.product_id} label={p.name} value={p.product_id} />
+                      <Picker.Item 
+                        key={p.producto_id} 
+                        label={`${p.nombre}${p.precio_unitario ? ` - Bs. ${Number(p.precio_unitario).toFixed(2)}` : ''}`} 
+                        value={p.producto_id} 
+                      />
                     ))}
                   </Picker>
                 </View>
 
-                <View className="flex-row gap-4">
+                <View className="flex-row gap-4 mb-3">
                   <View className="flex-1">
                     <Text className="text-gray-600 mb-1">Cantidad</Text>
                     <TextInput
@@ -393,16 +398,70 @@ export default function CreateOrderScreen({ navigation }: any) {
                     />
                   </View>
                 </View>
+
+                {/* Price Fields */}
+                <View className="flex-row gap-4">
+                  <View className="flex-1">
+                    <Text className="text-gray-600 mb-1">Precio Unitario</Text>
+                    <View className="bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      <Text className="text-green-700 font-bold">
+                        Bs. {(Number(item.precio_unitario) || 0).toFixed(2)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-gray-600 mb-1">Precio Total</Text>
+                    <View className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                      <Text className="text-blue-700 font-bold">
+                        Bs. {((Number(item.precio_unitario) || 0) * (item.quantity || 0)).toFixed(2)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
               </View>
             ))}
 
             <TouchableOpacity
-              className="bg-green-500 py-3 rounded-lg mb-8 flex-row justify-center items-center"
+              className="bg-green-500 py-3 rounded-lg mb-4 flex-row justify-center items-center"
               onPress={addProduct}
             >
               <CustomIcon name="plus" size={20} color="white" />
               <Text className="text-white font-bold ml-2">Agregar Producto</Text>
             </TouchableOpacity>
+
+            {/* Order Summary Section */}
+            <View className="bg-gray-100 p-4 rounded-xl mb-8">
+              <View className="flex-row items-center mb-3">
+                <CustomIcon name="calculator" size={20} color="#4B5563" />
+                <Text className="text-lg font-bold text-gray-700 ml-2">Resumen del Pedido</Text>
+              </View>
+              
+              <View className="flex-row justify-between mb-2">
+                <Text className="text-gray-600">Total de Productos:</Text>
+                <Text className="font-bold text-gray-900">
+                  {selectedProducts.filter(p => p.productId > 0).length}
+                </Text>
+              </View>
+              
+              <View className="flex-row justify-between mb-2">
+                <Text className="text-gray-600">Cantidad Total:</Text>
+                <Text className="font-bold text-gray-900">
+                  {selectedProducts.reduce((sum, p) => sum + p.quantity, 0)}
+                </Text>
+              </View>
+              
+              <View className="bg-blue-100 p-3 rounded-lg mt-2">
+                <View className="flex-row justify-between items-center">
+                  <View className="flex-row items-center">
+                    <CustomIcon name="cash" size={20} color="#1E40AF" />
+                    <Text className="text-blue-800 font-bold ml-1">Total del Pedido:</Text>
+                  </View>
+                  <Text className="text-blue-900 font-bold text-xl">
+                    Bs. {selectedProducts.reduce((sum, p) => sum + (p.precio_unitario * p.quantity), 0).toFixed(2)}
+                  </Text>
+                </View>
+              </View>
+            </View>
           </>
         ) : (
           <>

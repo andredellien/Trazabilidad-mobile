@@ -48,18 +48,19 @@ export default function EditProcessScreen() {
   useEffect(() => {
     if (process) {
       setFormData({
-        name: process.name,
-        description: process.description || '',
-        active: process.active,
+        name: process.name || process.nombre || '',
+        description: process.description || process.descripcion || '',
+        active: process.active ?? process.activo ?? true,
       });
 
-      if (process.process_machines) {
-        const existingSteps = process.process_machines.map(pm => ({
-          machine_id: pm.machine_id,
-          step_order: pm.step_order,
-          name: pm.name,
-          description: pm.description,
-          estimated_time: pm.estimated_time,
+      const machines = process.process_machines || process.processMachines;
+      if (machines) {
+        const existingSteps = machines.map((pm: any) => ({
+          machine_id: pm.machine_id || pm.maquina_id,
+          step_order: pm.step_order || pm.orden_paso,
+          name: pm.name || pm.nombre,
+          description: pm.description || pm.descripcion,
+          estimated_time: pm.estimated_time || pm.tiempo_estimado,
         }));
         setSteps(existingSteps);
       }
@@ -213,7 +214,7 @@ export default function EditProcessScreen() {
                   </View>
                   <View className="flex-1">
                     <Text className="font-bold text-gray-900">{step.name}</Text>
-                    <Text className="text-sm text-gray-600">Máquina: {machine?.name || 'N/A'}</Text>
+                    <Text className="text-sm text-gray-600">Máquina: {machine?.name || machine?.nombre || 'N/A'}</Text>
                     {step.description && (
                       <Text className="text-sm text-gray-500 mt-1">{step.description}</Text>
                     )}
@@ -269,9 +270,9 @@ export default function EditProcessScreen() {
                   <Picker.Item label="Seleccionar máquina..." value={0} />
                   {machines?.map((machine: any) => (
                     <Picker.Item
-                      key={machine.machine_id}
-                      label={`${machine.name} (${machine.code})`}
-                      value={machine.machine_id}
+                      key={machine.machine_id || machine.maquina_id}
+                      label={`${machine.name || machine.nombre} (${machine.code || machine.codigo})`}
+                      value={machine.machine_id || machine.maquina_id}
                     />
                   ))}
                 </Picker>

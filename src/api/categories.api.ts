@@ -1,11 +1,12 @@
 import { apiClient } from './client';
 
+// Category interface matching Spanish database schema (table: categoria_materia_prima)
 export interface Category {
-  category_id: number;
-  code: string;
-  name: string;
-  description?: string;
-  active: boolean;
+  categoria_id: number;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  activo: boolean;
 }
 
 export const categoriesApi = {

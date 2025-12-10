@@ -1,22 +1,22 @@
 import { apiClient } from './client';
 
+// Supplier interface matching Spanish database schema (table: proveedor)
 export interface Supplier {
-  supplier_id: number;
-  business_name: string;
-  trading_name?: string;
-  tax_id?: string;
-  contact_person?: string;
-  phone?: string;
+  proveedor_id: number;
+  razon_social: string;
+  nombre_comercial?: string;
+  nit?: string;
+  contacto?: string;
+  telefono?: string;
   email?: string;
-  address?: string;
-  active: boolean;
+  direccion?: string;
+  activo: boolean;
 }
 
 export const suppliersApi = {
   getSuppliers: async () => {
     try {
       const response = await apiClient.get('/suppliers');
-      // Handle paginated response
       return response.data.data || response.data;
     } catch (error: any) {
       console.log('getSuppliers error:', error.response?.status, error.response?.data || error.message);

@@ -1,46 +1,8 @@
 import { apiClient } from './client';
 
-export interface OrderProduct {
-  order_product_id: number;
-  order_id: number;
-  product_id: number;
-  quantity: number;
-  status: 'pendiente' | 'aprobado' | 'rechazado';
-  rejection_reason?: string;
-  observations?: string;
-  product?: {
-    product_id: number;
-    name: string;
-    code: string;
-    unit?: {
-      name: string;
-      abbreviation: string;
-    };
-  };
-}
-
-export interface CustomerOrder {
-  order_id: number;
-  customer_id: number;
-  order_number: string;
-  creation_date?: string;
-  description: string;
-  quantity: number;
-  delivery_date?: string;
-  priority: number;
-  status?: string;
-  customer?: {
-    customer_id: number;
-    business_name: string;
-    trading_name?: string;
-    contact_person?: string;
-  };
-  orderProducts?: OrderProduct[];
-  approver?: {
-    id: number;
-    name: string;
-  };
-}
+// Re-export types from customers for compatibility
+export { CustomerOrder, OrderProduct, OrderDestination } from './customers.api';
+import type { CustomerOrder, OrderProduct } from './customers.api';
 
 export const ordersApi = {
   getOrders: async () => {
@@ -64,8 +26,8 @@ export const ordersApi = {
     return response.data;
   },
 
-  createOrder: async (data: Partial<CustomerOrder>) => {
-    const response = await apiClient.post<CustomerOrder>('/customer-orders', data);
+  createOrder: async (data: any) => {
+    const response = await apiClient.post('/customer-orders', data);
     return response.data;
   },
 
@@ -98,14 +60,14 @@ export const ordersApi = {
 
   approveProduct: async (orderId: number, productId: number, observations?: string) => {
     const response = await apiClient.post(`/order-approval/${orderId}/product/${productId}/approve`, {
-      observations
+      observaciones: observations
     });
     return response.data;
   },
 
   rejectProduct: async (orderId: number, productId: number, reason: string) => {
     const response = await apiClient.post(`/order-approval/${orderId}/product/${productId}/reject`, {
-      rejection_reason: reason
+      razon_rechazo: reason
     });
     return response.data;
   },

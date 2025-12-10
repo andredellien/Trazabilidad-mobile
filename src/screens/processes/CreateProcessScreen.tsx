@@ -215,7 +215,7 @@ export default function CreateProcessScreen({ navigation }: any) {
                   </View>
                   <View className="flex-1">
                     <Text className="font-bold text-gray-900 text-base">{step.name}</Text>
-                    <Text className="text-sm text-gray-600">{machine?.name || 'N/A'}</Text>
+                    <Text className="text-sm text-gray-600">{machine?.name || machine?.nombre || 'N/A'}</Text>
                   </View>
                   <View className="flex-row gap-2">
                     <TouchableOpacity
@@ -296,8 +296,8 @@ export default function CreateProcessScreen({ navigation }: any) {
                 selectedValue={currentStep.machine_id}
                 onValueChange={(value) => setCurrentStep({ ...currentStep, machine_id: value })}
                 items={(machines as any[])?.map((machine: any) => ({
-                  label: `${machine.name} (${machine.code})`,
-                  value: machine.machine_id,
+                  label: `${machine.name || machine.nombre} (${machine.code || machine.codigo})`,
+                  value: machine.machine_id || machine.maquina_id,
                 })) || []}
                 placeholder="Seleccionar máquina..."
               />
@@ -419,9 +419,9 @@ export default function CreateProcessScreen({ navigation }: any) {
                       >
                         <View className="flex-row justify-between items-start mb-3">
                           <View className="flex-1">
-                            <Text className="text-lg font-bold text-gray-900">{stdVar?.name || 'Variable'}</Text>
-                            {stdVar?.unit && (
-                              <Text className="text-sm text-gray-600">Unidad: {stdVar.unit}</Text>
+                            <Text className="text-lg font-bold text-gray-900">{stdVar?.name || stdVar?.nombre || 'Variable'}</Text>
+                            {(stdVar?.unit || stdVar?.unidad) && (
+                              <Text className="text-sm text-gray-600">Unidad: {stdVar?.unit || stdVar?.unidad}</Text>
                             )}
                           </View>
                           <TouchableOpacity
@@ -489,7 +489,7 @@ export default function CreateProcessScreen({ navigation }: any) {
                         setCurrentVariable({ ...currentVariable, standard_variable_id: value })
                       }
                       items={(standardVariables as any[])?.map((variable: any) => ({
-                        label: `${variable.name}${variable.unit ? ` (${variable.unit})` : ''}`,
+                        label: `${variable.name || variable.nombre}${(variable.unit || variable.unidad) ? ` (${variable.unit || variable.unidad})` : ''}`,
                         value: variable.variable_id,
                       })) || []}
                       placeholder="Seleccionar variable..."

@@ -33,11 +33,11 @@ export default function RegisterScreen({ navigation }: any) {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setIsLoading(true);
-      // Register the user
+      // Register the user - use Spanish field names
       await authApi.register({
-        first_name: data.first_name,
-        last_name: data.last_name,
-        username: data.username,
+        nombre: data.first_name,
+        apellido: data.last_name,
+        usuario: data.username,
         email: data.email,
         password: data.password,
       });
