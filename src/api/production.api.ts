@@ -175,6 +175,7 @@ export const productionApi = {
           product_name: batch.product_name || batch.order?.description || batch.order?.descripcion || batch.name || batch.nombre || 'Unknown Product',
           status: status,
           start_date: batch.start_date || batch.creation_date || batch.hora_inicio || batch.fecha_creacion,
+          creation_date: batch.creation_date || batch.fecha_creacion,
           end_date: batch.end_time || batch.hora_fin,
           quantity: parseFloat(String(batch.quantity || batch.target_quantity || batch.cantidad_objetivo || 0)),
           operator_name: batch.operator_name || 'Production Team',
@@ -224,12 +225,12 @@ export const productionApi = {
 
   createBatch: async (data: any) => {
     console.log('createBatch called with:', data);
-    // Map to Spanish field names if needed
+    // Map to English field names as expected by ProductionBatchController
     const payload = {
-      pedido_id: data.order_id || data.pedido_id,
-      nombre: data.name || data.nombre,
-      cantidad_objetivo: data.target_quantity || data.cantidad_objetivo,
-      observaciones: data.observations || data.observaciones,
+      order_id: data.order_id || data.pedido_id,
+      name: data.name || data.nombre,
+      target_quantity: data.target_quantity || data.cantidad_objetivo,
+      observations: data.observations || data.observaciones,
       raw_materials: data.raw_materials,
     };
     const response = await apiClient.post('/production-batches', payload);

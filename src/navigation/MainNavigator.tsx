@@ -11,6 +11,7 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import RawMaterialsScreen from '../screens/materials/RawMaterialsScreen';
 import CreateMaterialScreen from '../screens/materials/CreateMaterialScreen';
 import CreateMaterialBaseScreen from '../screens/materials/CreateMaterialBaseScreen';
+import RequestMaterialScreen from '../screens/materials/RequestMaterialScreen';
 import CreateSupplierScreen from '../screens/materials/CreateSupplierScreen';
 import RawMaterialDetailScreen from '../screens/materials/RawMaterialDetailScreen';
 import OrdersScreen from '../screens/orders/OrdersScreen';
@@ -27,8 +28,19 @@ import RecordVariablesScreen from '../screens/production/RecordVariablesScreen';
 import FinalizeCertificationScreen from '../screens/production/FinalizeCertificationScreen';
 import CertificationLogScreen from '../screens/production/CertificationLogScreen';
 
+import ReportsScreen from '../screens/home/ReportsScreen';
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="HomeDashboard" component={HomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Reports" component={ReportsScreen} options={{ headerShown: false, presentation: 'modal' }} />
+    </Stack.Navigator>
+  );
+}
 
 function ProductionStack() {
   return (
@@ -50,6 +62,7 @@ function MaterialsStack() {
       <Stack.Screen name="RawMaterials" component={RawMaterialsScreen} options={{ title: 'Materias Primas' }} />
       <Stack.Screen name="CreateMaterial" component={CreateMaterialScreen} options={{ title: 'Nueva Materia Prima' }} />
       <Stack.Screen name="CreateMaterialBase" component={CreateMaterialBaseScreen} options={{ title: 'Nueva Base' }} />
+      <Stack.Screen name="RequestMaterial" component={RequestMaterialScreen} options={{ title: 'Solicitar Material' }} />
 
       <Stack.Screen name="CreateSupplier" component={CreateSupplierScreen} options={{ title: 'Nuevo Proveedor' }} />
       <Stack.Screen name="MaterialDetail" component={RawMaterialDetailScreen} options={{ title: 'Detalle de Materia Prima' }} />
@@ -124,7 +137,7 @@ export default function MainNavigator() {
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio' }} />
+      <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, title: 'Inicio' }} />
       <Tab.Screen name="Orders" component={OrdersStack} options={{ headerShown: false, title: 'Órdenes' }} />
       <Tab.Screen name="Materials" component={MaterialsStack} options={{ headerShown: false, title: 'Materiales' }} />
       <Tab.Screen name="Production" component={ProductionStack} options={{ headerShown: false, title: 'Lotes' }} />

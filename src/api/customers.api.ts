@@ -19,7 +19,8 @@ export interface CustomerOrder {
   cliente_id: number;
   numero_pedido: string;
   nombre: string;
-  estado: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' | 'en_produccion' | 'completado';
+  status?: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' | 'en_produccion' | 'completado';
+  estado?: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' | 'en_produccion' | 'completado';
   fecha_creacion?: string;
   fecha_entrega?: string;
   descripcion?: string;
@@ -30,6 +31,7 @@ export interface CustomerOrder {
   razon_rechazo?: string;
   customer?: Customer;
   orderProducts?: OrderProduct[];
+  total_price?: number;
 }
 
 // OrderProduct interface matching Spanish database schema (table: producto_pedido)

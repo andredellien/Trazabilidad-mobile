@@ -8,8 +8,12 @@ import { suppliersApi } from '../../api/suppliers.api';
 import { Button } from '../../components/common/Button';
 import { Picker } from '@react-native-picker/picker';
 
-export default function CreateMaterialScreen({ navigation }: any) {
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
+export default function CreateMaterialScreen({ navigation, route }: any) {
   const queryClient = useQueryClient();
+  const { request, detail } = route.params || {};
+
   const [formData, setFormData] = useState({
     material_id: '',
     supplier_id: '',
@@ -20,10 +24,25 @@ export default function CreateMaterialScreen({ navigation }: any) {
     quantity: '',
     receipt_conformity: true,
     observations: '',
+    solicitud_id: null as number | null,
   });
 
   const [showReceiptDatePicker, setShowReceiptDatePicker] = useState(false);
   const [showExpirationDatePicker, setShowExpirationDatePicker] = useState(false);
+
+  // Pre-fill form if request/detail is passed
+  React.useEffect(() => {
+    if (request && detail) {
+      setFormData(prev => ({
+        ...prev,
+        material_id: detail.material_id.toString(),
+        quantity: detail.cantidad_solicitada?.toString() || '',
+        solicitud_id: request.solicitud_id,
+        // Optional: Pre-fill observations with request info
+        observations: `Recepción de solicitud ${request.numero_solicitud}`
+      }));
+    }
+  }, [request, detail]);
 
   // Fetch material bases for dropdown
   const { data: materialBases, isLoading: loadingBases, error: basesError, refetch: refetchBases } = useQuery({
@@ -59,6 +78,7 @@ export default function CreateMaterialScreen({ navigation }: any) {
     mutationFn: rawMaterialsApi.createRawMaterial,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rawMaterials'] });
+      queryClient.invalidateQueries({ queryKey: ['pendingMaterialRequests'] }); // Refresh pending requests
       Alert.alert('Éxito', 'Materia prima creada exitosamente');
       navigation.goBack();
     },
@@ -84,6 +104,7 @@ export default function CreateMaterialScreen({ navigation }: any) {
       quantity: parseFloat(formData.quantity),
       receipt_conformity: formData.receipt_conformity,
       observations: formData.observations || undefined,
+      solicitud_id: formData.solicitud_id || undefined,
     });
   };
 
@@ -95,6 +116,165 @@ export default function CreateMaterialScreen({ navigation }: any) {
     );
   }
 
+  // Render Reception Mode (Web Modal Style)
+  if (request && detail) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <ScrollView className="flex-1">
+          {/* Header matching Web Modal */}
+          <View className="bg-blue-600 p-4">
+            <Text className="text-white text-xl font-bold">Recepción de Materia Prima</Text>
+            <Text className="text-blue-100 text-sm">Solicitud {request.numero_solicitud}</Text>
+          </View>
+
+          <View className="p-4">
+            {/* Material Info Card */}
+            <View className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4 overflow-hidden">
+              <View className="bg-gray-50 p-3 border-b border-gray-200">
+                <Text className="text-gray-700 font-bold">Información del Material</Text>
+              </View>
+              <View className="p-4">
+                <View className="mb-2">
+                  <Text className="text-gray-500 text-xs uppercase font-bold">Nombre</Text>
+                  <Text className="text-gray-900 text-lg font-medium">
+                    {detail.material?.nombre || 'Material ' + detail.material_id}
+                  </Text>
+                </View>
+                <View>
+                  <Text className="text-gray-500 text-xs uppercase font-bold">Cantidad Solicitada</Text>
+                  <Text className="text-gray-900 text-lg font-medium">
+                    {detail.cantidad_solicitada} {detail.material?.unit?.codigo}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Form Fields */}
+            <View className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              
+              {/* Supplier */}
+              <View className="mb-4">
+                <Text className="text-gray-700 font-medium mb-1">Proveedor <Text className="text-red-500">*</Text></Text>
+                <View className="border border-gray-300 rounded-lg bg-white">
+                  <Picker
+                    selectedValue={formData.supplier_id}
+                    onValueChange={(value: string) => setFormData({ ...formData, supplier_id: value })}
+                  >
+                    <Picker.Item label="Seleccionar proveedor..." value="" />
+                    {Array.isArray(suppliers) && suppliers.map((supplier: any) => (
+                      <Picker.Item 
+                        key={supplier.supplier_id} 
+                        label={supplier.business_name || supplier.razon_social} 
+                        value={supplier.supplier_id.toString()} 
+                      />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              <View className="flex-row space-x-4 mb-4">
+                {/* Quantity */}
+                <View className="flex-1 mr-2">
+                  <Text className="text-gray-700 font-medium mb-1">Cantidad Recibida <Text className="text-red-500">*</Text></Text>
+                  <TextInput
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-lg"
+                    value={formData.quantity}
+                    onChangeText={(text) => setFormData({ ...formData, quantity: text })}
+                    keyboardType="decimal-pad"
+                    placeholder="0.00"
+                  />
+                </View>
+
+                {/* Invoice */}
+                <View className="flex-1 ml-2">
+                  <Text className="text-gray-700 font-medium mb-1">No. Factura <Text className="text-red-500">*</Text></Text>
+                  <TextInput
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-lg"
+                    value={formData.invoice_number}
+                    onChangeText={(text) => setFormData({ ...formData, invoice_number: text })}
+                    placeholder="Ej: FACT-001"
+                  />
+                </View>
+              </View>
+
+              {/* Receipt Date */}
+              <View className="mb-4">
+                <Text className="text-gray-700 font-medium mb-1">Fecha de Recepción <Text className="text-red-500">*</Text></Text>
+                <TouchableOpacity 
+                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 flex-row justify-between items-center"
+                  onPress={() => setShowReceiptDatePicker(true)}
+                >
+                  <Text className="text-gray-900 text-lg">{formData.receipt_date}</Text>
+                  <MaterialIcons name="calendar-today" size={20} color="#6B7280" />
+                </TouchableOpacity>
+                <Text className="text-xs text-gray-500 mt-1">
+                  Seleccione una fecha a partir de hoy
+                </Text>
+                {showReceiptDatePicker && (
+                  <DateTimePicker
+                    value={formData.receipt_date ? new Date(formData.receipt_date + 'T00:00:00') : new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={(event, selectedDate) => {
+                      setShowReceiptDatePicker(Platform.OS === 'ios');
+                      if (selectedDate) {
+                        const year = selectedDate.getFullYear();
+                        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(selectedDate.getDate()).padStart(2, '0');
+                        setFormData({ ...formData, receipt_date: `${year}-${month}-${day}` });
+                      }
+                    }}
+                  />
+                )}
+              </View>
+
+              {/* Conformity */}
+              <View className="mb-4 flex-row items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <Switch
+                  value={formData.receipt_conformity}
+                  onValueChange={(value) => setFormData({ ...formData, receipt_conformity: value })}
+                  trackColor={{ false: "#767577", true: "#10B981" }}
+                  thumbColor={formData.receipt_conformity ? "#fff" : "#f4f3f4"}
+                />
+                <Text className="ml-3 text-gray-700 font-medium">Recepción Conforme</Text>
+              </View>
+
+              {/* Observations */}
+              <View className="mb-4">
+                <Text className="text-gray-700 font-medium mb-1">Observaciones</Text>
+                <TextInput
+                  className="bg-white border border-gray-300 rounded-lg px-3 py-2"
+                  value={formData.observations}
+                  onChangeText={(text) => setFormData({ ...formData, observations: text })}
+                  placeholder="Observaciones sobre la recepción..."
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              {/* Buttons */}
+              <View className="mt-2 space-y-3">
+                <Button
+                  title={createMutation.isPending ? "Guardando..." : "Guardar Recepción"}
+                  onPress={handleSubmit}
+                  variant="primary"
+                  disabled={createMutation.isPending}
+                />
+                <Button
+                  title="Cancelar"
+                  onPress={() => navigation.goBack()}
+                  variant="outline"
+                />
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // Default Creation Mode (Existing Code)
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1 p-4">
@@ -135,7 +315,11 @@ export default function CreateMaterialScreen({ navigation }: any) {
             >
               <Picker.Item label="Seleccione un material" value="" />
               {Array.isArray(materialBases) && materialBases.map((base: any) => (
-                <Picker.Item key={base.material_id} label={base.name} value={base.material_id.toString()} />
+                <Picker.Item 
+                  key={base.material_id} 
+                  label={`${base.name || base.nombre} (Disp: ${base.cantidad_disponible ?? 0} ${base.unit?.codigo || ''})`} 
+                  value={base.material_id.toString()} 
+                />
               ))}
             </Picker>
           </View>
@@ -161,7 +345,7 @@ export default function CreateMaterialScreen({ navigation }: any) {
               {Array.isArray(suppliers) && suppliers.map((supplier: any) => (
                 <Picker.Item 
                   key={supplier.supplier_id} 
-                  label={supplier.business_name || supplier.trading_name} 
+                  label={supplier.business_name || supplier.razon_social || supplier.trading_name || supplier.nombre_comercial} 
                   value={supplier.supplier_id.toString()} 
                 />
               ))}

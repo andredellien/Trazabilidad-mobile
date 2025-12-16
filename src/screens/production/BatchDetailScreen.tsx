@@ -155,17 +155,7 @@ export default function BatchDetailScreen({ route, navigation }: any) {
               variant="primary"
             />
             
-            <Button
-              title="Control de Calidad"
-              onPress={() => navigation.navigate('QualityControl', { batchId })}
-              variant="secondary"
-            />
             
-            <Button
-              title="Uso de Materiales"
-              onPress={() => navigation.navigate('MaterialUsage', { batchId })}
-              variant="outline"
-            />
           </View>
         )}
       </ScrollView>

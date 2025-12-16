@@ -38,19 +38,26 @@ export default function OrdersScreen({ navigation }: any) {
     );
   };
 
-  const getStatusBadge = (priority: number) => {
-    if (priority === 0) {
-      return { label: 'Completado', bg: 'bg-green-100', text: 'text-green-800' };
-    } else if (priority > 5) {
-      return { label: 'Urgente', bg: 'bg-red-100', text: 'text-red-800' };
-    } else if (priority > 0) {
-      return { label: 'Pendiente', bg: 'bg-yellow-100', text: 'text-yellow-800' };
+  const getStatusBadge = (status: string = 'pendiente') => {
+    switch (status.toLowerCase()) {
+      case 'completado':
+      case 'aprobado':
+        return { label: status.charAt(0).toUpperCase() + status.slice(1), bg: 'bg-green-100', text: 'text-green-800' };
+      case 'urgente':
+      case 'rechazado':
+      case 'cancelado':
+        return { label: status.charAt(0).toUpperCase() + status.slice(1), bg: 'bg-red-100', text: 'text-red-800' };
+      case 'pendiente':
+        return { label: 'Pendiente', bg: 'bg-yellow-100', text: 'text-yellow-800' };
+      case 'en_produccion':
+        return { label: 'En Proceso', bg: 'bg-blue-100', text: 'text-blue-800' };
+      default:
+        return { label: status, bg: 'bg-gray-100', text: 'text-gray-800' };
     }
-    return { label: 'En Proceso', bg: 'bg-blue-100', text: 'text-blue-800' };
   };
 
   const renderOrder = ({ item }: any) => {
-    const status = getStatusBadge(item.priority);
+    const status = getStatusBadge(item.status || item.estado);
     
     return (
       <TouchableOpacity 
@@ -61,7 +68,7 @@ export default function OrdersScreen({ navigation }: any) {
           <View className="flex-row justify-between items-start mb-3">
             <View className="flex-1">
               <Text className="text-lg font-bold text-gray-900">
-                {item.customer?.business_name || item.customer?.trading_name || 'Cliente Desconocido'}
+                {item.name || item.nombre || 'Pedido Sin Nombre'}
               </Text>
               <Text className="text-xs text-blue-600 font-medium">
                 {item.order_number || `#${item.order_id}`}
@@ -128,12 +135,7 @@ export default function OrdersScreen({ navigation }: any) {
         <View className="bg-white p-4 border-b border-gray-200 flex-row justify-between items-center">
           <Text className="text-xl font-bold text-gray-900">Pedidos de Clientes</Text>
           <View className="flex-row">
-            <TouchableOpacity
-              className="bg-yellow-100 p-3 rounded-lg shadow-sm mr-2"
-              onPress={() => navigation.navigate('PendingApprovals')}
-            >
-              <CustomIcon name="time" size={24} color="#854D0E" />
-            </TouchableOpacity>
+           
             <TouchableOpacity
               className="bg-blue-600 p-3 rounded-lg shadow-sm"
               onPress={() => navigation.navigate('CreateOrder')}

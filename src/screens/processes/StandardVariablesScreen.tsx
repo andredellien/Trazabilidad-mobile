@@ -18,6 +18,10 @@ export default function StandardVariablesScreen() {
   const { data: variables, isLoading, error, refetch } = useQuery({
     queryKey: ['standardVariables'],
     queryFn: standardVariablesApi.getStandardVariables,
+    select: (data) => {
+      // Sort by ID descending to show latest first
+      return [...data].sort((a: any, b: any) => b.variable_id - a.variable_id);
+    },
   });
 
   const createMutation = useMutation({
@@ -146,25 +150,25 @@ export default function StandardVariablesScreen() {
           <View className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 p-4">
             <View className="flex-row justify-between items-start mb-2">
               <View className="flex-1">
-                <Text className="text-lg font-bold text-gray-900">{item.name}</Text>
-                <Text className="text-xs text-blue-600 font-medium">{item.code}</Text>
-                {item.unit && (
+                <Text className="text-lg font-bold text-gray-900">{item.nombre || item.name}</Text>
+                <Text className="text-xs text-blue-600 font-medium">{item.codigo || item.code}</Text>
+                {(item.unidad || item.unit) && (
                   <View className="flex-row items-center mt-1">
                     <CustomIcon name="settings" size={14} color="#6B7280" />
-                    <Text className="text-sm text-gray-600 ml-1">Unidad: {item.unit}</Text>
+                    <Text className="text-sm text-gray-600 ml-1">Unidad: {item.unidad || item.unit}</Text>
                   </View>
                 )}
               </View>
-              <View className={`px-2 py-1 rounded-full ${item.active ? 'bg-green-100' : 'bg-red-100'}`}>
-                <Text className={`text-xs font-medium ${item.active ? 'text-green-700' : 'text-red-700'}`}>
-                  {item.active ? 'Activa' : 'Inactiva'}
+              <View className={`px-2 py-1 rounded-full ${(item.activo ?? item.active) ? 'bg-green-100' : 'bg-red-100'}`}>
+                <Text className={`text-xs font-medium ${(item.activo ?? item.active) ? 'text-green-700' : 'text-red-700'}`}>
+                  {(item.activo ?? item.active) ? 'Activa' : 'Inactiva'}
                 </Text>
               </View>
             </View>
 
-            {item.description && (
+            {(item.descripcion || item.description) && (
               <Text className="text-gray-600 text-sm mt-2" numberOfLines={2}>
-                {item.description}
+                {item.descripcion || item.description}
               </Text>
             )}
 
@@ -234,10 +238,11 @@ export default function StandardVariablesScreen() {
             <View className="mb-4">
               <Text className="text-gray-700 font-medium mb-2">Nombre *</Text>
               <TextInput
-                className="bg-gray-50 border border-gray-300 rounded-lg px-4 py-3"
+                className="bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-900"
                 value={formData.name}
                 onChangeText={(text) => setFormData({ ...formData, name: text })}
                 placeholder="Ej: Temperatura"
+                placeholderTextColor="#9CA3AF"
               />
             </View>
 
@@ -245,10 +250,11 @@ export default function StandardVariablesScreen() {
             <View className="mb-4">
               <Text className="text-gray-700 font-medium mb-2">Unidad</Text>
               <TextInput
-                className="bg-gray-50 border border-gray-300 rounded-lg px-4 py-3"
+                className="bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-900"
                 value={formData.unit}
                 onChangeText={(text) => setFormData({ ...formData, unit: text })}
                 placeholder="Ej: °C, kg, m/s"
+                placeholderTextColor="#9CA3AF"
               />
             </View>
 
@@ -256,10 +262,11 @@ export default function StandardVariablesScreen() {
             <View className="mb-6">
               <Text className="text-gray-700 font-medium mb-2">Descripción</Text>
               <TextInput
-                className="bg-gray-50 border border-gray-300 rounded-lg px-4 py-3"
+                className="bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-900"
                 value={formData.description}
                 onChangeText={(text) => setFormData({ ...formData, description: text })}
                 placeholder="Descripción de la variable"
+                placeholderTextColor="#9CA3AF"
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"

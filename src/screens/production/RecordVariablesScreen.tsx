@@ -64,15 +64,24 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
     return { isValid: true, message: '✓ Válido', color: '#10B981' };
   };
 
+  const parseNumber = (value: string): number => {
+    // Handle comma as decimal separator
+    const normalized = value.replace(',', '.');
+    return parseFloat(normalized);
+  };
+
+  const getVarName = (variable: ProcessMachineVariable): string => {
+    const stdVar = (variable as any).standard_variable || variable.standardVariable;
+    return stdVar?.code || stdVar?.codigo || stdVar?.name || stdVar?.nombre || '';
+  };
+
   const handleSubmit = () => {
     // Convert string values to numbers
     const enteredVariables: Record<string, number> = {};
     let hasErrors = false;
 
     processMachine.variables?.forEach((variable) => {
-      // Handle both camelCase and snake_case from API
-      const stdVar = (variable as any).standard_variable || variable.standardVariable;
-      const varName = stdVar?.code || stdVar?.codigo || stdVar?.name || stdVar?.nombre || '';
+      const varName = getVarName(variable);
       const value = variables[varName];
 
       if ((variable.mandatory || variable.obligatorio) && !value) {
@@ -81,7 +90,7 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
       }
 
       if (value) {
-        const numValue = parseFloat(value);
+        const numValue = parseNumber(value);
         if (isNaN(numValue)) {
           hasErrors = true;
           return;

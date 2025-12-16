@@ -63,6 +63,26 @@ export const CustomIcon = ({ name, size, color, style }: CustomIconProps) => {
         return <Ionicons name="add" size={size} color={color} style={style} />;
       case 'trash-2':
         return <Ionicons name="trash-outline" size={size} color={color} style={style} />;
+      case 'bar-chart':
+        return <MaterialIcons name="bar-chart" size={size} color={color} style={style} />;
+      case 'arrow-forward':
+        return <Ionicons name="arrow-forward" size={size} color={color} style={style} />;
+      case 'arrow-back':
+        return <Ionicons name="arrow-back" size={size} color={color} style={style} />;
+      case 'login':
+        return <MaterialIcons name="login" size={size} color={color} style={style} />;
+      case 'checkmark-circle':
+        return <Ionicons name="checkmark-circle" size={size} color={color} style={style} />;
+      case 'alert-circle':
+        return <Ionicons name="alert-circle" size={size} color={color} style={style} />;
+      case 'arrow-drop-down':
+        return <MaterialIcons name="arrow-drop-down" size={size} color={color} style={style} />;
+      case 'check-circle':
+        return <MaterialIcons name="check-circle" size={size} color={color} style={style} />;
+      case 'search':
+        return <Ionicons name="search" size={size} color={color} style={style} />;
+      case 'close-circle':
+        return <Ionicons name="close-circle" size={size} color={color} style={style} />;
       default:
         return <Ionicons name="help-circle" size={size} color={color} style={style} />;
     }

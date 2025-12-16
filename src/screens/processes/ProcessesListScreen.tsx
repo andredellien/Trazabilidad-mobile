@@ -9,6 +9,10 @@ export default function ProcessesListScreen({ navigation }: any) {
   const { data: processes, isLoading, error, refetch } = useQuery({
     queryKey: ['processes'],
     queryFn: () => processesApi.getProcesses(),
+    select: (data) => {
+      // Sort by ID descending to show latest first
+      return [...data].sort((a: any, b: any) => b.proceso_id - a.proceso_id);
+    },
   });
 
   if (isLoading) {

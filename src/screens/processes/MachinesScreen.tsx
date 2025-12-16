@@ -9,6 +9,10 @@ export default function MachinesScreen({ navigation }: any) {
   const { data: machines, isLoading, error, refetch } = useQuery({
     queryKey: ['machines'],
     queryFn: machinesApi.getMachines,
+    select: (data) => {
+      // Sort by ID descending to show latest first
+      return [...data].sort((a: any, b: any) => b.maquina_id - a.maquina_id);
+    },
   });
 
   if (isLoading) {

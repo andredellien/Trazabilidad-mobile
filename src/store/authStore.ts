@@ -8,7 +8,7 @@ interface User {
   last_name: string;
   username: string;
   email: string;
-  role: {
+  role?: {
     role_id: string;
     name: string;
   };
@@ -63,14 +63,25 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const token = await AsyncStorage.getItem('auth_token');
       if (token) {
-        // Optionally verify token with getCurrentUser
-        // const user = await authApi.getCurrentUser();
-        set({
-          // user, 
-          token,
-          isAuthenticated: true,
-          isLoading: false,
-        });
+        // Verify token and get user data
+        try {
+          const user = await authApi.getCurrentUser();
+          set({
+            user, 
+            token,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } catch (error) {
+          // Token invalid or expired
+          await AsyncStorage.removeItem('auth_token');
+          set({ 
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false 
+          });
+        }
       } else {
         set({ isLoading: false });
       }

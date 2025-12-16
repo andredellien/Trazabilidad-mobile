@@ -9,8 +9,15 @@ import { Button } from '../../components/common/Button';
 import { CustomIcon } from '../../components/common/CustomIcon';
 import { Picker } from '@react-native-picker/picker';
 
+import { MaterialPickerModal } from '../../components/common/MaterialPickerModal';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
 export default function CreateBatchScreen({ navigation }: any) {
   const queryClient = useQueryClient();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [activeMaterialIndex, setActiveMaterialIndex] = useState<number | null>(null);
+
   const [formData, setFormData] = useState({
     order_id: '',
     name: '',
@@ -33,10 +40,10 @@ export default function CreateBatchScreen({ navigation }: any) {
     retry: false,
   });
 
-  // Fetch raw materials for selection
-  const { data: rawMaterials, isLoading: loadingMaterials, error: materialsError } = useQuery({
-    queryKey: ['rawMaterials'],
-    queryFn: rawMaterialsApi.getRawMaterials,
+  // Fetch raw material bases for selection
+  const { data: materialBases, isLoading: loadingMaterials, error: materialsError } = useQuery({
+    queryKey: ['rawMaterialBases'],
+    queryFn: rawMaterialsApi.getRawMaterialBases,
     retry: false,
   });
 
@@ -63,7 +70,6 @@ export default function CreateBatchScreen({ navigation }: any) {
       return;
     }
 
-    // Validate raw materials
     // Validate raw materials
     const rawMaterialsPayload = selectedMaterials.map(material => ({
       raw_material_id: material.raw_material_id,
@@ -94,14 +100,14 @@ export default function CreateBatchScreen({ navigation }: any) {
   };
 
   const addMaterial = () => {
-    if (!rawMaterials || rawMaterials.length === 0) {
+    if (!materialBases || materialBases.length === 0) {
       Alert.alert('Error', 'No hay materias primas disponibles');
       return;
     }
     
     // Find the first available material that hasn't been added yet
-    const availableMaterial = rawMaterials.find((material: any) => 
-      !selectedMaterials.some(selected => selected.raw_material_id === material.raw_material_id)
+    const availableMaterial = materialBases.find((material: any) => 
+      !selectedMaterials.some(selected => selected.raw_material_id === material.material_id)
     );
     
     if (!availableMaterial) {
@@ -110,11 +116,11 @@ export default function CreateBatchScreen({ navigation }: any) {
     }
     
     const newMaterial = {
-      raw_material_id: availableMaterial.raw_material_id,
-      name: availableMaterial.base?.name || availableMaterial.material_base?.name || 'Material Desconocido',
+      raw_material_id: availableMaterial.material_id,
+      name: availableMaterial.nombre || availableMaterial.name || 'Material Desconocido',
       planned_quantity: '',
-      unit: availableMaterial.base?.unit?.name || availableMaterial.material_base?.unit?.name || 'unidades',
-      available_quantity: availableMaterial.quantity || 0
+      unit: availableMaterial.unit?.codigo || availableMaterial.unit?.name || 'unidades',
+      available_quantity: availableMaterial.cantidad_disponible || 0
     };
     
     setSelectedMaterials([...selectedMaterials, newMaterial]);
@@ -131,19 +137,35 @@ export default function CreateBatchScreen({ navigation }: any) {
     setSelectedMaterials(newMaterials);
   };
 
-  const changeMaterial = (index: number, materialId: number) => {
-    const material = rawMaterials?.find((m: any) => m.raw_material_id === materialId);
-    if (!material) return;
-    
+  const openMaterialPicker = (index: number) => {
+    setActiveMaterialIndex(index);
+    setModalVisible(true);
+  };
+
+  const handleMaterialSelect = (material: any) => {
+    if (activeMaterialIndex === null) return;
+
+    // Check if material is already selected in another row
+    const isAlreadySelected = selectedMaterials.some((m, idx) => 
+      idx !== activeMaterialIndex && m.raw_material_id === material.material_id
+    );
+
+    if (isAlreadySelected) {
+      Alert.alert('Error', 'Este material ya ha sido agregado');
+      return;
+    }
+
     const newMaterials = [...selectedMaterials];
-    newMaterials[index] = {
-      raw_material_id: material.raw_material_id,
-      name: material.base?.name || material.material_base?.name || 'Material Desconocido',
-      planned_quantity: newMaterials[index].planned_quantity,
-      unit: material.base?.unit?.name || material.material_base?.unit?.name || 'unidades',
-      available_quantity: material.quantity || 0
+    newMaterials[activeMaterialIndex] = {
+      raw_material_id: material.material_id,
+      name: material.nombre || material.name || 'Material Desconocido',
+      planned_quantity: newMaterials[activeMaterialIndex].planned_quantity,
+      unit: material.unit?.codigo || material.unit?.name || 'unidades',
+      available_quantity: material.cantidad_disponible || 0
     };
     setSelectedMaterials(newMaterials);
+    setModalVisible(false);
+    setActiveMaterialIndex(null);
   };
 
   if (loadingOrders || loadingMaterials) {
@@ -179,15 +201,68 @@ export default function CreateBatchScreen({ navigation }: any) {
               onValueChange={(value: string) => setFormData({ ...formData, order_id: value })}
             >
               <Picker.Item label="Seleccione una orden" value="" />
-              {Array.isArray(orders) && orders.map((order: any) => (
+              {Array.isArray(orders) && orders
+                .filter((order: any) => (order.status || order.estado) === 'pendiente')
+                .map((order: any) => (
                 <Picker.Item 
-                  key={order.order_id} 
-                  label={`${order.name || order.description || 'Sin descripción'}`} 
-                  value={order.order_id.toString()} 
+                  key={order.order_id || order.pedido_id} 
+                  label={`${order.name || order.nombre || 'Sin descripción'} - ${order.customer?.razon_social || 'Sin cliente'}`} 
+                  value={(order.order_id || order.pedido_id).toString()} 
                 />
               ))}
             </Picker>
           </View>
+
+          {/* Selected Order Details */}
+          {formData.order_id && orders && (
+            <View className="mt-3 bg-blue-50 p-4 rounded-lg border border-blue-100">
+              {(() => {
+                const selectedOrder = orders.find((o: any) => (o.order_id || o.pedido_id).toString() === formData.order_id);
+                if (!selectedOrder) return null;
+
+                const products = selectedOrder.order_products || selectedOrder.orderProducts || [];
+                const totalQuantity = products.reduce((sum: number, p: any) => sum + (parseFloat(p.quantity || p.cantidad) || 0), 0);
+
+                return (
+                  <View>
+                    <Text className="font-bold text-blue-900 mb-2">Información del Pedido:</Text>
+                    
+                    <Text className="text-blue-800 text-sm mb-1">
+                      <Text className="font-semibold">Fecha requerida: </Text>
+                      {(() => {
+                        const dateStr = selectedOrder.delivery_date || selectedOrder.fecha_entrega;
+                        if (!dateStr) return 'N/A';
+                        try {
+                          // Handle "YYYY-MM-DD" strings by creating a date object manually to avoid timezone issues
+                          // or just let new Date handle it if it's standard ISO
+                          const date = new Date(dateStr);
+                          // Check if valid date
+                          if (isNaN(date.getTime())) return dateStr;
+                          // Format: "15 de diciembre de 2025"
+                          return format(date, "d 'de' MMMM 'de' yyyy", { locale: es });
+                        } catch (e) {
+                          return dateStr;
+                        }
+                      })()}
+                    </Text>
+
+                    <Text className="font-semibold text-blue-800 text-sm mt-2 mb-1">Productos solicitados:</Text>
+                    {products.length > 0 ? (
+                      products.map((prod: any, idx: number) => (
+                        <Text key={idx} className="text-blue-700 text-sm ml-2">
+                          • {prod.product?.name || prod.product?.nombre || prod.nombre || 'Producto'} ({prod.product?.type || prod.product?.tipo || prod.tipo || 'N/A'}): {parseFloat(prod.quantity || prod.cantidad).toFixed(2)} {prod.product?.unit?.code || prod.product?.unit?.codigo || prod.unidad || ''}
+                        </Text>
+                      ))
+                    ) : (
+                      <Text className="text-blue-600 text-sm italic ml-2">No hay productos en este pedido</Text>
+                    )}
+
+
+                  </View>
+                );
+              })()}
+            </View>
+          )}
         </View>
 
         {/* Name */}
@@ -211,6 +286,20 @@ export default function CreateBatchScreen({ navigation }: any) {
             placeholder="Cantidad a producir"
             keyboardType="decimal-pad"
           />
+          {formData.order_id && orders && (() => {
+             const selectedOrder = orders.find((o: any) => (o.order_id || o.pedido_id).toString() === formData.order_id);
+             if (!selectedOrder) return null;
+             const products = selectedOrder.order_products || selectedOrder.orderProducts || [];
+             const totalQuantity = products.reduce((sum: number, p: any) => sum + (parseFloat(p.quantity || p.cantidad) || 0), 0);
+             
+             if (totalQuantity <= 0) return null;
+
+             return (
+               <Text className="text-blue-600 text-xs mt-2 ml-1">
+                 Cantidad total requerida por el almacén: <Text className="font-bold">{totalQuantity.toFixed(2)}</Text>
+               </Text>
+             );
+          })()}
         </View>
 
         {/* Observations */}
@@ -251,24 +340,18 @@ export default function CreateBatchScreen({ navigation }: any) {
 
               <View className="mb-3">
                 <Text className="text-gray-600 text-xs mb-1">Material</Text>
-                <View className="border border-gray-200 rounded-lg">
-                  <Picker
-                    selectedValue={material.raw_material_id}
-                    onValueChange={(value) => changeMaterial(index, Number(value))}
-                  >
-                    {rawMaterials?.map((rm: any) => {
-                      const name = rm.base?.name || rm.material_base?.name || 'Desconocido';
-                      const unit = rm.base?.unit?.name || rm.material_base?.unit?.name || '';
-                      return (
-                        <Picker.Item 
-                          key={rm.raw_material_id} 
-                          label={`${name} (${rm.quantity} ${unit})`} 
-                          value={rm.raw_material_id} 
-                        />
-                      );
-                    })}
-                  </Picker>
-                </View>
+                <TouchableOpacity 
+                  className="bg-gray-50 border border-gray-300 rounded-lg p-3 flex-row justify-between items-center"
+                  onPress={() => openMaterialPicker(index)}
+                >
+                  <View>
+                    <Text className="font-medium text-gray-900">{material.name}</Text>
+                    <Text className="text-xs text-gray-500 mt-0.5">
+                      Disponible: {Number(material.available_quantity).toFixed(2)} {material.unit}
+                    </Text>
+                  </View>
+                  <CustomIcon name="arrow-drop-down" size={24} color="#6B7280" />
+                </TouchableOpacity>
               </View>
 
               <View className="flex-row">
@@ -321,6 +404,15 @@ export default function CreateBatchScreen({ navigation }: any) {
             variant="outline"
           />
         </View>
+
+        {/* Material Picker Modal */}
+        <MaterialPickerModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSelect={handleMaterialSelect}
+          materials={materialBases || []}
+          selectedId={activeMaterialIndex !== null ? selectedMaterials[activeMaterialIndex]?.raw_material_id : undefined}
+        />
       </ScrollView>
     </SafeAreaView>
   );

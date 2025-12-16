@@ -37,11 +37,11 @@ export interface RawMaterial {
   cantidad_disponible: number;
   conformidad_recepcion?: boolean;
   observaciones?: string;
-  materialBase?: RawMaterialBase;
+  material_base?: RawMaterialBase;
   supplier?: {
-    proveedor_id: number;
-    razon_social: string;
-    nombre_comercial?: string;
+    supplier_id: number;
+    business_name: string;
+    trading_name?: string;
   };
 }
 
@@ -111,8 +111,9 @@ export const rawMaterialsApi = {
   },
 
   getRawMaterial: async (id: number) => {
-    const response = await apiClient.get<RawMaterial>(`/raw-materials/${id}`);
-    return response.data;
+    const response = await apiClient.get<any>(`/raw-materials/${id}`);
+    const data = response.data.data || response.data;
+    return data;
   },
 
   createRawMaterial: async (data: Partial<RawMaterial>) => {
@@ -161,6 +162,31 @@ export const rawMaterialsApi = {
 
   deleteRawMaterialCategory: async (id: number) => {
     const response = await apiClient.delete(`/raw-material-categories/${id}`);
+    return response.data;
+  },
+
+  // Material Requests
+  getMaterialRequests: async (params?: { estado?: string }) => {
+    try {
+      const response = await apiClient.get('/material-requests', { params });
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.log('getMaterialRequests error:', error.response?.status);
+      return [];
+    }
+  },
+
+  getPendingMaterialRequests: async () => {
+    return rawMaterialsApi.getMaterialRequests({ estado: 'pendiente' });
+  },
+
+  createMaterialRequest: async (data: any) => {
+    const response = await apiClient.post('/material-requests', data);
+    return response.data;
+  },
+
+  getMaterialRequest: async (id: number) => {
+    const response = await apiClient.get(`/material-requests/${id}`);
     return response.data;
   },
 };

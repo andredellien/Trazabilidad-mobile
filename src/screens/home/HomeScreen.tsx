@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, RefreshControl, Dimensions } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
 import { CustomIcon } from '../../components/common/CustomIcon';
@@ -17,9 +17,9 @@ export default function HomeScreen({ navigation }: any) {
     queryFn: productionApi.getBatches,
   });
 
-  const { data: materials, isLoading: materialsLoading, refetch: refetchMaterials } = useQuery({
-    queryKey: ['dashboard-materials'],
-    queryFn: rawMaterialsApi.getRawMaterials,
+  const { data: materialBases, isLoading: materialsLoading, refetch: refetchMaterials } = useQuery({
+    queryKey: ['dashboard-material-bases'],
+    queryFn: rawMaterialsApi.getRawMaterialBases,
   });
 
   const { data: orders, isLoading: ordersLoading, refetch: refetchOrders } = useQuery({
@@ -47,10 +47,10 @@ export default function HomeScreen({ navigation }: any) {
 
   // Calculate metrics
   const totalBatches = batches?.length || 0;
-  const activeBatches = batches?.filter(b => b.status === 'in_progress')?.length || 0;
-  const completedBatches = batches?.filter(b => b.status === 'completed')?.length || 0;
-  const totalMaterials = materials?.length || 0;
-  const lowStockMaterials = materials?.filter(m => m.available_quantity < 100)?.length || 0;
+  const activeBatches = batches?.filter((b: any) => b.status === 'in_progress')?.length || 0;
+  const completedBatches = batches?.filter((b: any) => b.status === 'completed')?.length || 0;
+  const totalMaterials = materialBases?.length || 0;
+  const lowStockMaterials = materialBases?.filter((m: any) => m.cantidad_disponible < 100)?.length || 0;
   const totalOrders = orders?.length || 0;
   const pendingOrders = orders?.length || 0; // All orders are pending in our current data
 
@@ -164,11 +164,30 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Recent Activity */}
+        {/* Reports Button */}
         <View className="px-4 mt-6">
+          <TouchableOpacity 
+            className="bg-blue-600 rounded-lg p-4 shadow-sm flex-row items-center justify-between"
+            onPress={() => navigation.navigate('Reports')}
+          >
+            <View className="flex-row items-center">
+              <View className="bg-blue-500 p-2 rounded-full mr-3">
+                <CustomIcon name="bar-chart" size={24} color="white" />
+              </View>
+              <View>
+                <Text className="text-white font-bold text-lg">Ver Reportes</Text>
+                <Text className="text-blue-100 text-sm">Gráficas y estadísticas detalladas</Text>
+              </View>
+            </View>
+            <CustomIcon name="arrow-forward" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Recent Activity */}
+        <View className="px-4 mt-6 mb-6">
           <Text className="text-lg font-bold text-gray-900 mb-4">Actividad de Producción Reciente</Text>
           <View className="bg-white rounded-lg shadow-sm">
-            {batches?.slice(0, 3).map((batch, index) => {
+            {batches?.slice(0, 3).map((batch: any, index: number) => {
               // Status colors and labels mapping
               const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
                 pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'PENDIENTE' },
@@ -205,7 +224,6 @@ export default function HomeScreen({ navigation }: any) {
             })}
           </View>
         </View>
-
 
       </ScrollView>
     </SafeAreaView>

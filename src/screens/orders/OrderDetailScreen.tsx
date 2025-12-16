@@ -122,12 +122,13 @@ export default function OrderDetailScreen({ route, navigation }: any) {
     });
   };
 
-  const getStatusInfo = (estado?: string) => {
-    if (estado === 'aprobado') return { label: 'Aprobado', bg: 'bg-green-600', icon: 'checkmark-circle' };
-    if (estado === 'rechazado') return { label: 'Rechazado', bg: 'bg-red-600', icon: 'close-circle' };
-    if (estado === 'cancelado') return { label: 'Cancelado', bg: 'bg-gray-600', icon: 'close-circle' };
-    if (estado === 'completado') return { label: 'Completado', bg: 'bg-green-600', icon: 'checkmark-circle' };
-    if (estado === 'en_produccion') return { label: 'En Producción', bg: 'bg-blue-600', icon: 'refresh-circle' };
+  const getStatusInfo = (status?: string) => {
+    const s = (status || '').toLowerCase();
+    if (s === 'aprobado') return { label: 'Aprobado', bg: 'bg-green-600', icon: 'checkmark-circle' };
+    if (s === 'rechazado') return { label: 'Rechazado', bg: 'bg-red-600', icon: 'close-circle' };
+    if (s === 'cancelado') return { label: 'Cancelado', bg: 'bg-gray-600', icon: 'close-circle' };
+    if (s === 'completado') return { label: 'Completado', bg: 'bg-green-600', icon: 'checkmark-circle' };
+    if (s === 'en_produccion') return { label: 'En Producción', bg: 'bg-blue-600', icon: 'refresh-circle' };
     return { label: 'Pendiente', bg: 'bg-yellow-500', icon: 'time' };
   };
 
@@ -148,7 +149,7 @@ export default function OrderDetailScreen({ route, navigation }: any) {
     );
   }
 
-  const status = getStatusInfo(order.estado);
+  const status = getStatusInfo(order.status || order.estado);
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">

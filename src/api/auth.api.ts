@@ -43,9 +43,22 @@ export const authApi = {
   login: async (data: LoginRequest) => {
     console.log('Login attempt:', { username: data.username, url: apiClient.defaults.baseURL + '/auth/login' });
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/login', data);
+      const response = await apiClient.post<any>('/auth/login', data);
       console.log('Login success:', response.status);
-      return response.data;
+      
+      // Map backend response to frontend structure
+      const backendOperator = response.data.operator;
+      return {
+        token: response.data.token,
+        operator: {
+          operator_id: backendOperator.operador_id,
+          first_name: backendOperator.nombre,
+          last_name: backendOperator.apellido,
+          username: backendOperator.usuario,
+          email: backendOperator.email,
+          role: backendOperator.role
+        }
+      };
     } catch (error: any) {
       console.log('Login error:', error.response?.status, error.response?.data);
       throw error;
@@ -55,9 +68,9 @@ export const authApi = {
   register: async (data: RegisterRequest) => {
     // Map to expected backend fields
     const payload = {
-      first_name: data.nombre,
-      last_name: data.apellido,
-      username: data.usuario,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      usuario: data.usuario,
       email: data.email,
       password: data.password,
     };
@@ -67,7 +80,15 @@ export const authApi = {
 
   getCurrentUser: async () => {
     const response = await apiClient.get('/auth/me');
-    return response.data;
+    const backendOperator = response.data;
+    return {
+      operator_id: backendOperator.operador_id,
+      first_name: backendOperator.nombre,
+      last_name: backendOperator.apellido,
+      username: backendOperator.usuario,
+      email: backendOperator.email,
+      role: backendOperator.role
+    };
   },
 
   logout: async () => {

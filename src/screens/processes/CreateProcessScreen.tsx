@@ -97,11 +97,33 @@ export default function CreateProcessScreen({ navigation }: any) {
 
     if (editingStepIndex === null) return;
 
+    const minVal = currentVariable.min_value ? parseFloat(currentVariable.min_value) : undefined;
+    const maxVal = currentVariable.max_value ? parseFloat(currentVariable.max_value) : undefined;
+    const targetVal = currentVariable.target_value ? parseFloat(currentVariable.target_value) : undefined;
+
+    // Validation: Min cannot be greater than Max
+    if (minVal !== undefined && maxVal !== undefined && minVal > maxVal) {
+      Alert.alert('Error', 'El valor mínimo no puede ser mayor que el valor máximo');
+      return;
+    }
+
+    // Validation: Target must be within Min and Max range
+    if (targetVal !== undefined) {
+      if (minVal !== undefined && targetVal < minVal) {
+        Alert.alert('Error', 'El valor objetivo no puede ser menor que el valor mínimo');
+        return;
+      }
+      if (maxVal !== undefined && targetVal > maxVal) {
+        Alert.alert('Error', 'El valor objetivo no puede ser mayor que el valor máximo');
+        return;
+      }
+    }
+
     const newVariable: ProcessMachineVariable = {
       standard_variable_id: currentVariable.standard_variable_id,
-      min_value: currentVariable.min_value ? parseFloat(currentVariable.min_value) : undefined,
-      max_value: currentVariable.max_value ? parseFloat(currentVariable.max_value) : undefined,
-      target_value: currentVariable.target_value ? parseFloat(currentVariable.target_value) : undefined,
+      min_value: minVal,
+      max_value: maxVal,
+      target_value: targetVal,
       mandatory: currentVariable.mandatory,
     };
 
