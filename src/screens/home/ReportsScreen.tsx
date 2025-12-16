@@ -21,7 +21,7 @@ export default function ReportsScreen({ navigation }: any) {
 
   const { data: materials, isLoading: materialsLoading, refetch: refetchMaterials } = useQuery({
     queryKey: ['dashboard-materials'],
-    queryFn: rawMaterialsApi.getRawMaterials,
+    queryFn: rawMaterialsApi.getRawMaterialBases,
   });
 
   const { data: orders, isLoading: ordersLoading, refetch: refetchOrders } = useQuery({
@@ -103,23 +103,27 @@ export default function ReportsScreen({ navigation }: any) {
     return dates;
   };
 
-  // Helper to normalize date to local YYYY-MM-DD
+  // Helper to normalize date to GMT-4 YYYY-MM-DD
   const normalizeDate = (dateString: string) => {
     if (!dateString) return null;
-    // Fix for SQL timestamp format: "2025-12-15 15:30:00" -> "2025-12-15T15:30:00"
+    
+    // Create date object from string (assuming UTC if no timezone specified)
     let isoString = dateString.replace(' ', 'T');
-    // If no timezone indicator, assume UTC (Z) if it looks like a full timestamp
     if (isoString.length > 10 && !isoString.endsWith('Z') && !isoString.includes('+') && !isoString.includes('-')) {
       isoString += 'Z';
     }
+    
     const date = new Date(isoString);
-    // Check if date is valid
-    if (isNaN(date.getTime())) return dateString.split('T')[0].split(' ')[0]; // Fallback to simple split
+    if (isNaN(date.getTime())) return dateString.split('T')[0].split(' ')[0];
 
-    // Return local YYYY-MM-DD
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    // Adjust to GMT-4 (subtract 4 hours)
+    // We use the UTC time and subtract 4 hours to get the local time in Bolivia/GMT-4
+    const gmt4Date = new Date(date.getTime() - (4 * 60 * 60 * 1000));
+    
+    const year = gmt4Date.getUTCFullYear();
+    const month = String(gmt4Date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(gmt4Date.getUTCDate()).padStart(2, '0');
+    
     return `${year}-${month}-${day}`;
   };
 
@@ -145,13 +149,16 @@ export default function ReportsScreen({ navigation }: any) {
   };
 
   // 3. Material Stock (Bar Chart - Top 5 lowest stock)
-  const sortedMaterials = [...(materials || [])].sort((a: any, b: any) => parseFloat(a.available_quantity) - parseFloat(b.available_quantity)).slice(0, 5);
+  // Use RawMaterialBase properties (nombre, cantidad_disponible)
+  const sortedMaterials = [...(materials || [])]
+    .sort((a: any, b: any) => parseFloat(a.cantidad_disponible || a.available_quantity || 0) - parseFloat(b.cantidad_disponible || b.available_quantity || 0))
+    .slice(0, 5);
   
   const barChartData = {
-    labels: sortedMaterials.map((m: any) => (m.material_base?.name || 'Sin nombre').substring(0, 10) + ((m.material_base?.name || '').length > 10 ? '...' : '')),
+    labels: sortedMaterials.map((m: any) => (m.nombre || m.name || 'Sin nombre').substring(0, 10) + ((m.nombre || m.name || '').length > 10 ? '...' : '')),
     datasets: [
       {
-        data: sortedMaterials.map((m: any) => parseFloat(m.available_quantity))
+        data: sortedMaterials.map((m: any) => parseFloat(m.cantidad_disponible || m.available_quantity || 0))
       }
     ]
   };

@@ -27,6 +27,8 @@ export const CustomIcon = ({ name, size, color, style }: CustomIconProps) => {
         return <Ionicons name="warning" size={size} color={color} style={style} />;
       case 'add-circle':
         return <Ionicons name="add-circle" size={size} color={color} style={style} />;
+      case 'add-circle-outline':
+        return <Ionicons name="add-circle-outline" size={size} color={color} style={style} />;
       case 'assessment':
         return <MaterialIcons name="assessment" size={size} color={color} style={style} />;
       case 'add':

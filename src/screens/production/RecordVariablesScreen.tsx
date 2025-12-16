@@ -126,11 +126,11 @@ export default function RecordVariablesScreen({ route, navigation }: any) {
         <View className="bg-blue-600 p-4">
           <View className="flex-row items-center mb-2">
             <View className="bg-white w-10 h-10 rounded-full items-center justify-center mr-3">
-              <Text className="text-blue-600 font-bold text-lg">{processMachine.step_order}</Text>
+              <Text className="text-blue-600 font-bold text-lg">{processMachine.step_order || processMachine.orden_paso}</Text>
             </View>
             <View className="flex-1">
-              <Text className="text-white font-bold text-lg">{processMachine.name}</Text>
-              <Text className="text-blue-100 text-sm">{processMachine.machine?.name}</Text>
+              <Text className="text-white font-bold text-lg">{processMachine.name || processMachine.nombre}</Text>
+              <Text className="text-blue-100 text-sm">{processMachine.machine?.name || processMachine.machine?.nombre}</Text>
             </View>
           </View>
         </View>

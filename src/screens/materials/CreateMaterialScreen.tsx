@@ -9,6 +9,8 @@ import { Button } from '../../components/common/Button';
 import { Picker } from '@react-native-picker/picker';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { CreateSupplierModal } from '../../components/materials/CreateSupplierModal';
+import { CustomIcon } from '../../components/common/CustomIcon';
 
 export default function CreateMaterialScreen({ navigation, route }: any) {
   const queryClient = useQueryClient();
@@ -28,7 +30,9 @@ export default function CreateMaterialScreen({ navigation, route }: any) {
   });
 
   const [showReceiptDatePicker, setShowReceiptDatePicker] = useState(false);
+
   const [showExpirationDatePicker, setShowExpirationDatePicker] = useState(false);
+  const [showSupplierModal, setShowSupplierModal] = useState(false);
 
   // Pre-fill form if request/detail is passed
   React.useEffect(() => {
@@ -154,7 +158,16 @@ export default function CreateMaterialScreen({ navigation, route }: any) {
               
               {/* Supplier */}
               <View className="mb-4">
-                <Text className="text-gray-700 font-medium mb-1">Proveedor <Text className="text-red-500">*</Text></Text>
+                <View className="flex-row justify-between items-center mb-1">
+                  <Text className="text-gray-700 font-medium">Proveedor <Text className="text-red-500">*</Text></Text>
+                  <TouchableOpacity 
+                    className="flex-row items-center space-x-1"
+                    onPress={() => setShowSupplierModal(true)}
+                  >
+                    <CustomIcon name="add-circle-outline" size={20} color="#2563EB" />
+                    <Text className="text-blue-600 text-sm font-medium">Crear nuevo</Text>
+                  </TouchableOpacity>
+                </View>
                 <View className="border border-gray-300 rounded-lg bg-white">
                   <Picker
                     selectedValue={formData.supplier_id}
@@ -270,6 +283,16 @@ export default function CreateMaterialScreen({ navigation, route }: any) {
             </View>
           </View>
         </ScrollView>
+
+        
+        <CreateSupplierModal
+          visible={showSupplierModal}
+          onClose={() => setShowSupplierModal(false)}
+          onSuccess={() => {
+            console.log('Supplier created - refetching');
+            refetchSuppliers();
+          }}
+        />
       </SafeAreaView>
     );
   }
